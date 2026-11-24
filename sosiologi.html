@@ -1,0 +1,3335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartExam – Online Examination System | ASAS Sosiologi Kelas XII</title>
+
+  <!-- Typography: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js for Score Breakdown & Progression Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+            },
+            accent: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeSlideIn 0.25s ease-out forwards;
+    }
+
+    @keyframes pulseUrgent {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+      }
+    }
+
+    .timer-urgent {
+      animation: pulseUrgent 1.6s infinite;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand Logo -->
+        <button id="brandLogoBtn" class="flex items-center gap-3 text-left focus:outline-none group" type="button">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-violet-600 flex items-center justify-center text-white shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform">
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg tracking-tight text-slate-900">SmartExam</span>
+              <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-100 text-violet-700">
+                OES v2.6
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-none hidden sm:block">Online Examination System • SMA Kemala Bhayangkari 1 Surabaya</p>
+          </div>
+        </button>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1.5" aria-label="Navigasi Utama">
+          <button data-nav="home" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2" type="button">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Beranda</span>
+          </button>
+          <button data-nav="exam" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2" type="button">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>Ujian</span>
+          </button>
+          <button data-nav="history" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2" type="button">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span>Riwayat</span>
+          </button>
+          <button data-nav="admin" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2" type="button">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>Admin</span>
+          </button>
+        </nav>
+
+        <!-- Active Exam Mini Status / Mobile Menu Trigger -->
+        <div class="flex items-center gap-2">
+          <div id="headerTimerBadge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            <i data-lucide="timer" class="w-4 h-4"></i>
+            <span id="headerTimerText">120:00</span>
+          </div>
+
+          <button id="mobileMenuBtn" class="md:hidden p-2.5 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none" aria-label="Buka Menu" type="button">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <div id="mobileNavDrawer" class="hidden md:hidden pb-3 pt-1 border-t border-slate-100">
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <button data-nav="home" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left" type="button">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Beranda</span>
+          </button>
+          <button data-nav="exam" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left" type="button">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>Ujian</span>
+          </button>
+          <button data-nav="history" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left" type="button">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span>Riwayat</span>
+          </button>
+          <button data-nav="admin" class="mobile-nav-btn px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 text-left" type="button">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>Admin</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Banner (No alert()) -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Main Content Container -->
+  <main id="appContainer" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <!-- Dynamic Views Rendered Here -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-slate-700">SmartExam – Online Examination System</span>
+        <span>•</span>
+        <span>ASAS Sosiologi Kelas XII Ganjil (TA 2026/2027)</span>
+      </div>
+      <div>SMA Kemala Bhayangkari 1 Surabaya • 30 Butir Soal Terverifikasi</div>
+    </div>
+  </footer>
+
+  <!-- Custom Confirmation / Guard Modal -->
+  <div id="modalBackdrop" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs items-center justify-center p-4">
+    <div id="modalCard" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-fade-in">
+      <div class="flex items-start gap-3.5">
+        <div id="modalIconWrap" class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <div class="flex-1">
+          <h3 id="modalTitle" class="font-display font-bold text-lg text-slate-900">Konfirmasi Tindakan</h3>
+          <p id="modalMessage" class="text-sm text-slate-600 mt-1 leading-relaxed"></p>
+        </div>
+      </div>
+      <div class="mt-6 flex items-center justify-end gap-2.5">
+        <button id="modalCancelBtn" class="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors" type="button">
+          Batal
+        </button>
+        <button id="modalConfirmBtn" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm" type="button">
+          Ya, Lanjutkan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. DEFAULT DATASET: ALL 30 QUESTIONS FROM SOAL_ASAS_SOSIOLOGI_KELAS_12
+    // =========================================================================
+    const DEFAULT_EXAM_CONFIG = {
+      title: 'ASAS Sosiologi Kelas XII – Perubahan Sosial & Globalisasi',
+      school: 'SMA Kemala Bhayangkari 1 Surabaya',
+      academicYear: 'Tahun Ajaran 2026/2027',
+      semester: 'Kelas XII / Ganjil (Gasal)',
+      description:
+        'Asesmen Sumatif Akhir Semester (ASAS) mata pelajaran Sosiologi mencakup 6 bentuk soal (Pilihan Ganda, Pilihan Ganda Kompleks, Benar–Salah, Menjodohkan, Isian Singkat, dan Uraian Panjang) dengan materi Perubahan Sosial, Globalisasi, dan Masyarakat Digital.',
+      durationMinutes: 120,
+      passingGrade: 75,
+      categories: [
+        'Konsep & Ciri Perubahan Sosial',
+        'Teori & Jenis Perubahan Sosial',
+        'Faktor Pendorong & Penghambat',
+        'Dampak Perubahan Sosial',
+        'Globalisasi & Dampaknya',
+        'Masyarakat Digital & Solusi'
+      ],
+      instructions: [
+        'Ujian terdiri dari 30 butir soal yang terbagi ke dalam 6 bagian: Pilihan Ganda, Pilihan Ganda Kompleks (pilih 2 jawaban), Benar–Salah, Menjodohkan, Isian Singkat, dan Uraian Panjang.',
+        'Timer berjalan berkelanjutan sejak ujian dimulai dan tidak akan terulang saat Anda berpindah nomor soal. Peringatan muncul saat sisa waktu 5 menit, dan ujian otomatis selesai bila waktu habis.',
+        'Anda dapat berpindah soal menggunakan tombol "Sebelumnya", "Selanjutnya", atau panel Nomor Soal tanpa kehilangan jawaban yang sudah dipilih.',
+        'Tekan tombol "Jawab" pada tiap soal untuk mengunci/menilai jawaban serta menampilkan status benar/salah dan pembahasan lengkap.',
+        'Untuk soal Uraian Panjang, Anda dapat menuliskan analisis terstruktur lalu menandai kesesuaian rubrik/kunci pembahasan saat menekan "Jawab" agar skor otomatis diperhitungkan secara adil.',
+        'Nilai akhir dihitung dengan rumus: Nilai = (Jumlah jawaban benar / Total soal) × 100. Anda dapat mengulang ujian tanpa batas dengan urutan soal dan opsi yang diacak.'
+      ]
+    };
+
+    const DEFAULT_QUESTIONS = [
+      // BAGIAN I: PILIHAN GANDA (1, 9, 16, 17, 22)
+      {
+        id: 1,
+        number: 1,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Konsep dan Ciri Perubahan Sosial',
+        category: 'Konsep & Ciri Perubahan Sosial',
+        prompt:
+          'Dalam kehidupan masyarakat, perubahan pada unsur-unsur budaya seperti nilai, norma, sistem mata pencaharian, dan pola interaksi sosial yang berlangsung secara berkesinambungan serta memengaruhi tatanan kehidupan bersama merupakan konsep dari...',
+        options: [
+          { key: 'A', text: 'Perubahan sosial budaya' },
+          { key: 'B', text: 'Stratifikasi sosial tertutup' },
+          { key: 'C', text: 'Konsolidasi kelompok primer' },
+          { key: 'D', text: 'Akomodasi konflik statis' }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Perubahan sosial budaya mencakup perubahan nilai, norma, pola perilaku, dan kelembagaan masyarakat secara berkelanjutan serta memengaruhi tatanan kehidupan bersama.'
+      },
+      {
+        id: 2,
+        number: 2,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Konsep dan Ciri Perubahan Sosial',
+        category: 'Konsep & Ciri Perubahan Sosial',
+        selectCount: 2,
+        prompt:
+          'Perubahan sosial yang terjadi di masyarakat memiliki karakter atau ciri khas tertentu dalam membedakannya dari fenomena sosial lain. Manakah pernyataan yang tepat mengenai karakter/ciri perubahan sosial? (Pilih 2 jawaban)',
+        options: [
+          { key: 'A', text: 'Bersifat berkelanjutan (berkesinambungan) dan saling memengaruhi antarunsur maupun antarbagian dalam masyarakat' },
+          { key: 'B', text: 'Tidak ada masyarakat yang benar-benar statis secara mutlak karena perubahan dapat terjadi secara cepat maupun lambat' },
+          { key: 'C', text: 'Selalu terjadi secara mendadak dalam hitungan jam di seluruh aspek kehidupan tanpa proses' },
+          { key: 'D', text: 'Hanya terjadi pada masyarakat kota besar dan tidak pernah menyentuh masyarakat pedesaan' }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Perubahan sosial bersifat berkesinambungan/saling memengaruhi antarunsur masyarakat dan tidak ada masyarakat yang statis secara mutlak karena dinamika berlangsung lambat maupun cepat.'
+      },
+      {
+        id: 3,
+        number: 3,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Teori dan Bentuk Perubahan Sosial',
+        category: 'Teori & Jenis Perubahan Sosial',
+        prompt:
+          'Temukan persamaan dan perbedaan proses perubahan sosial berdasarkan pola tertentu (misalnya pola linear/evolusi, siklus, dan perubahan terencana/tidak terencana) beserta contohnya dalam kehidupan masyarakat!',
+        rubricPoints: [
+          'Menjelaskan persamaan: sama-sama menjelaskan dinamika gerak/perubahan masyarakat dari waktu ke waktu.',
+          'Membedakan pola linear/evolusi (bertahap/mengarah ke tahapan tertentu), siklus (fase berulang), serta terencana vs tidak terencana (ada rancangan/kehendak sadar atau tidak).',
+          'Menyertakan contoh konkret dalam kehidupan masyarakat.'
+        ],
+        correctAnswer:
+          'Persamaan: sama-sama menjelaskan dinamika gerak/perubahan masyarakat dari waktu ke waktu. Perbedaan pola: pola linear/evolusi bergerak bertahap/mengarah pada tahapan tertentu, pola siklus berputar melalui fase berulang, sedangkan terencana vs tidak terencana dibedakan oleh adanya rancangan/kehendak sadar atau tidak.',
+        explanation:
+          'Persamaan: sama-sama menjelaskan dinamika gerak/perubahan masyarakat dari waktu ke waktu. Perbedaan pola: pola linear/evolusi bergerak bertahap/mengarah pada tahapan tertentu, pola siklus berputar melalui fase berulang, sedangkan terencana vs tidak terencana dibedakan oleh adanya rancangan/kehendak sadar atau tidak.'
+      },
+      {
+        id: 4,
+        number: 4,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Teori dan Bentuk Perubahan Sosial',
+        category: 'Teori & Jenis Perubahan Sosial',
+        prompt:
+          'Dalam literasi sosiologi tentang teori perubahan sosial, teori yang menjelaskan bahwa masyarakat berkembang melewati tahapan-tahapan tertentu secara bertahap dari sederhana menuju kompleks (seperti tahapan teologis, metafisik, dan positif menurut Auguste Comte, atau perkembangan linear masyarakat) dikenal sebagai teori ____________________.',
+        acceptedKeywords: ['evolusi', 'unilinear', 'teori evolusi', 'teori unilinear'],
+        correctAnswer: 'Evolusi / Unilinear',
+        explanation:
+          'Teori evolusi/unilinear memandang perubahan masyarakat berlangsung bertahap dari bentuk sederhana ke bentuk yang lebih kompleks.'
+      },
+      {
+        id: 5,
+        number: 5,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Jenis Perubahan Sosial',
+        category: 'Teori & Jenis Perubahan Sosial',
+        prompt:
+          'Dalam literasi singkat: "Perubahan mode pakaian atau gaya potongan rambut yang cepat berganti mengikuti tren populer dan hanya memengaruhi sebagian kecil masyarakat tanpa mengubah struktur pokok masyarakat disebut perubahan mode/pengaruh kecil." Pernyataan dalam literasi tersebut tepat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'Perubahan mode/pengaruh kecil berlangsung cepat pada tren tertentu dan hanya memengaruhi sebagian kecil warga tanpa mengubah struktur pokok.'
+      },
+      {
+        id: 6,
+        number: 6,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Jenis Perubahan Sosial',
+        category: 'Teori & Jenis Perubahan Sosial',
+        prompt:
+          'Galilah perbedaan antara dua jenis perubahan sosial (misalnya perubahan evolusi dan revolusi, atau perubahan yang direncanakan dan tidak direncanakan) disertai penjelasan karakteristik dan contoh riilnya!',
+        rubricPoints: [
+          'Menjelaskan perbedaan utama dari sisi kecepatan, cakupan pengaruh, atau unsur kehendak/perencanaan.',
+          'Menguraikan karakteristik masing-masing jenis perubahan sosial.',
+          'Memberikan contoh riil yang relevan dengan masyarakat.'
+        ],
+        correctAnswer:
+          'Perbedaan utama terletak pada kecepatan, cakupan pengaruh, dan unsur yang berubah: evolusi berlangsung lambat dan bertahap, sedangkan revolusi berlangsung cepat dan menyentuh sendi/struktur pokok masyarakat (demikian pula perubahan terencana vs tidak terencana).',
+        explanation:
+          'Perbedaan utama terletak pada kecepatan, cakupan pengaruh, dan unsur yang berubah: evolusi berlangsung lambat dan bertahap, sedangkan revolusi berlangsung cepat dan menyentuh sendi/struktur pokok masyarakat (demikian pula perubahan terencana vs tidak terencana).'
+      },
+      {
+        id: 7,
+        number: 7,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Jenis Perubahan Sosial',
+        category: 'Teori & Jenis Perubahan Sosial',
+        prompt:
+          'Perubahan sosial yang terjadi secara berlangsung lambat dalam waktu yang cukup lama tanpa kehendak tertentu dari masyarakat, sering kali mengikuti proses alamiah atau penyesuaian bertahap, disebut perubahan sosial ____________________.',
+        acceptedKeywords: ['lambat', 'evolusi', 'perubahan lambat', 'perubahan evolusi'],
+        correctAnswer: 'Lambat / Evolusi',
+        explanation:
+          'Perubahan sosial lambat (evolusi) berlangsung dalam kurun waktu lama secara bertahap.'
+      },
+      {
+        id: 8,
+        number: 8,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Infografis & Literasi Jenis Perubahan Sosial',
+        category: 'Teori & Jenis Perubahan Sosial',
+        selectCount: 2,
+        infographic:
+          'Bagan (A) menampilkan transisi alat komunikasi dari surat kertas dan telepon kabel ke pesan instan daring dalam beberapa dekade secara berangsur; Bagan (B) menampilkan perubahan tata kelola pemerintahan dan sistem administrasi publik secara mendasar setelah reformasi kelembagaan.',
+        prompt:
+          'Berdasarkan infografis dan literasi tersebut, tentukan jenis perubahan sosial yang tepat pada kedua bagan! (Pilih 2 jawaban)',
+        options: [
+          { key: 'A', text: 'Bagan (A) menggambarkan perubahan sosial lambat (evolusi) pada pola komunikasi masyarakat' },
+          { key: 'B', text: 'Bagan (B) menggambarkan perubahan sosial cepat/mendasar (revolusi/struktural) pada sistem kelembagaan' },
+          { key: 'C', text: 'Bagan (A) merupakan contoh perubahan yang tidak direncanakan oleh manusia sama sekali' },
+          { key: 'D', text: 'Bagan (B) menunjukkan tidak adanya perubahan dalam tata kelola masyarakat' }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Bagan (A) menunjukkan perubahan evolusi pada komunikasi; Bagan (B) menunjukkan perubahan cepat/struktural pada kelembagaan.'
+      },
+      {
+        id: 9,
+        number: 9,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Faktor Penyebab Perubahan Sosial',
+        category: 'Faktor Pendorong & Penghambat',
+        prompt:
+          'Perhatikan beberapa fenomena berikut: (1) penemuan teknologi komunikasi dan transaksi daring, (2) perubahan jumlah penduduk serta urbanisasi ke kota besar, (3) konflik sosial dan bencana alam di suatu wilayah, dan (4) masuknya pengaruh kebudayaan masyarakat lain. Fenomena-fenomena tersebut termasuk dalam klasifikasi...',
+        options: [
+          { key: 'A', text: 'Faktor penyebab perubahan sosial (internal dan eksternal)' },
+          { key: 'B', text: 'Faktor penghambat perubahan sosial (adat istiadat kaku)' },
+          { key: 'C', text: 'Bentuk kemunduran sosial (regresi budaya)' },
+          { key: 'D', text: 'Ciri masyarakat primitif yang terisolasi' }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Inovasi/teknologi, pertumbuhan/dinamika penduduk, konflik/bencana, dan pengaruh budaya luar merupakan faktor penyebab perubahan sosial.'
+      },
+      {
+        id: 10,
+        number: 10,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Faktor Penyebab Perubahan Sosial',
+        category: 'Faktor Pendorong & Penghambat',
+        selectCount: 2,
+        prompt:
+          'Mahasiswa sering dipandang sebagai agen perubahan sosial (agent of change) karena memiliki akses terhadap wawasan keilmuan, nalar kritis, jejaring sosial yang luas, dan kepedulian terhadap isu-isu kemasyarakatan. Berdasarkan literasi tersebut, analisis yang tepat mengenai peran kedudukan mahasiswa sebagai agen perubahan sosial adalah... (Pilih 2 jawaban)',
+        options: [
+          { key: 'A', text: 'Menjadi penggerak gagasan kritis, edukasi publik, dan inovasi sosial berbasis solusi atas persoalan di masyarakat' },
+          { key: 'B', text: 'Menjembatani penyebaran informasi yang objektif serta mendorong partisipasi warga dalam perbaikan lingkungan sosial' },
+          { key: 'C', text: 'Memaksakan kehendak sepihak tanpa dialog maupun pertimbangan etika dan hukum' },
+          { key: 'D', text: 'Menjauhkan diri dari seluruh persoalan sosial dan kepentingan masyarakat sekitar' }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Mahasiswa berperan sebagai agen perubahan melalui gagasan kritis, edukasi, inovasi sosial, dan penguatan partisipasi masyarakat.'
+      },
+      {
+        id: 11,
+        number: 11,
+        section: 'Bagian IV. Menjodohkan / Mencocokkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan',
+        topic: 'Faktor Mempengaruhi Perubahan Sosial',
+        category: 'Faktor Pendorong & Penghambat',
+        prompt:
+          'Klasifikasikan faktor yang memengaruhi perubahan sosial (pendorong seperti pendidikan/inovasi vs penghambat seperti sikap konservatif). Pasangkan dengan pilihan jawaban yang tepat!',
+        matchItems: [
+          {
+            id: 'item_11',
+            label: '11. Klasifikasi faktor pendorong (pendidikan/inovasi) vs penghambat (sikap konservatif)'
+          }
+        ],
+        options: [
+          { key: 'A', text: 'Faktor pendorong (kemajuan pendidikan, kontak budaya, inovasi) vs faktor penghambat (sikap tertutup, adat kaku, hambatan akses)' },
+          { key: 'B', text: 'Efisiensi dan produktivitas kerja meningkat, tetapi muncul risiko ketimpangan keterampilan/kesenjangan kerja bagi yang belum beradaptasi' },
+          { key: 'C', text: 'Pergeseran pola konsumsi ke arah digital/e-commerce serta perubahan kebiasaan hiburan dan interaksi sosial masyarakat' },
+          { key: 'D', text: 'Cyberbullying (perundungan siber) / disinformasi atau hoaks digital' },
+          { key: 'E', text: 'Penguatan literasi digital dan kritis, regulasi/etika bermedia sosial, pelatihan keterampilan baru, serta pelestarian budaya lokal' },
+          { key: 'F', text: 'Menghapus seluruh akses internet dan menghentikan seluruh kegiatan ekonomi digital' },
+          { key: 'G', text: 'Membiarkan penyebaran hoaks tanpa edukasi maupun verifikasi informasi' },
+          { key: 'H', text: 'Menghilangkan seluruh lembaga pendidikan formal dan informal' }
+        ],
+        correctAnswer: { item_11: 'A' },
+        explanation:
+          'Membedakan faktor pendorong (pendidikan, inovasi, kontak budaya) dan faktor penghambat (sikap tertutup, adat kaku, hambatan akses).'
+      },
+      {
+        id: 12,
+        number: 12,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Literasi & Infografis Faktor Penghambat Perubahan Sosial',
+        category: 'Faktor Pendorong & Penghambat',
+        selectCount: 2,
+        infographic:
+          'Di sebuah wilayah terpencil dengan akses jalan rusak, sebagian warga memegang teguh pandangan bahwa "adat leluhur tidak boleh diubah sama sekali", disertai rasa khawatir kehilangan status sosial apabila sistem kerja lama diganti teknologi baru.',
+        prompt:
+          'Berdasarkan literasi dan infografis tersebut, analisis yang tepat mengenai faktor penghambat perubahan sosial masyarakat tersebut adalah... (Pilih 2 jawaban)',
+        options: [
+          { key: 'A', text: 'Sikap masyarakat yang terlalu tradisional / mempertahankan adat istiadat secara kaku dan prasangka terhadap hal-hal baru' },
+          { key: 'B', text: 'Adanya kekhawatiran akan terancamnya kepentingan atau status kelompok tertentu serta hambatan akses/sarana pendukung' },
+          { key: 'C', text: 'Tingginya keterbukaan masyarakat terhadap inovasi teknologi baru tanpa rasa khawatir' },
+          { key: 'D', text: 'Tersedianya infrastruktur transportasi dan pendidikan yang merata di seluruh wilayah' }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Hambatan perubahan tampak pada sikap adat yang kaku/prasangka hal baru serta kekhawatiran terancamnya kepentingan/keterbatasan akses.'
+      },
+      {
+        id: 13,
+        number: 13,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Faktor Mempengaruhi Perubahan Sosial',
+        category: 'Faktor Pendorong & Penghambat',
+        prompt:
+          'Berdasarkan literasi dan infografis hambatan perubahan: "Sikap tertutup terhadap inovasi baru, kuatnya tradisi yang tidak fleksibel, serta keterbatasan sarana penghubung merupakan faktor yang dapat menghambat laju perubahan sosial di masyarakat." Pernyataan tersebut tepat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'Sikap tertutup terhadap hal baru, tradisi kaku, dan keterbatasan sarana/akses menghambat perubahan sosial.'
+      },
+      {
+        id: 14,
+        number: 14,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Dampak Perubahan Sosial',
+        category: 'Dampak Perubahan Sosial',
+        prompt:
+          'Keadaan munculnya kemudahan akses layanan publik dan meningkatnya peluang usaha kreatif merupakan contoh dampak positif perubahan sosial, sedangkan meningkatnya kesenjangan sosial-ekonomi dan lunturnya norma kebersamaan merupakan keadaan yang muncul dari dampak negatif perubahan sosial. Pernyataan tersebut tepat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'Perubahan sosial memiliki dampak positif (kemudahan layanan/peluang usaha) dan dampak negatif (kesenjangan/lunturnya norma).'
+      },
+      {
+        id: 15,
+        number: 15,
+        section: 'Bagian IV. Menjodohkan / Mencocokkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan',
+        topic: 'Dampak Perubahan Sosial',
+        category: 'Dampak Perubahan Sosial',
+        prompt:
+          'Analisis dampak perubahan sosial dari literasi: masuknya sistem kerja berbasis digital meningkatkan efisiensi usaha, namun sebagian pekerja kurang terampil berisiko tertinggal jika tidak mengikuti pelatihan. Pasangkan dengan pilihan jawaban yang tepat!',
+        matchItems: [
+          {
+            id: 'item_15',
+            label: '15. Dampak sistem kerja digital: efisiensi meningkat vs risiko pekerja kurang terampil tertinggal'
+          }
+        ],
+        options: [
+          { key: 'A', text: 'Faktor pendorong (kemajuan pendidikan, kontak budaya, inovasi) vs faktor penghambat (sikap tertutup, adat kaku, hambatan akses)' },
+          { key: 'B', text: 'Efisiensi dan produktivitas kerja meningkat, tetapi muncul risiko ketimpangan keterampilan/kesenjangan kerja bagi yang belum beradaptasi' },
+          { key: 'C', text: 'Pergeseran pola konsumsi ke arah digital/e-commerce serta perubahan kebiasaan hiburan dan interaksi sosial masyarakat' },
+          { key: 'D', text: 'Cyberbullying (perundungan siber) / disinformasi atau hoaks digital' },
+          { key: 'E', text: 'Penguatan literasi digital dan kritis, regulasi/etika bermedia sosial, pelatihan keterampilan baru, serta pelestarian budaya lokal' },
+          { key: 'F', text: 'Menghapus seluruh akses internet dan menghentikan seluruh kegiatan ekonomi digital' },
+          { key: 'G', text: 'Membiarkan penyebaran hoaks tanpa edukasi maupun verifikasi informasi' },
+          { key: 'H', text: 'Menghilangkan seluruh lembaga pendidikan formal dan informal' }
+        ],
+        correctAnswer: { item_15: 'B' },
+        explanation:
+          'Digitalisasi kerja meningkatkan efisiensi, tetapi berisiko menimbulkan ketimpangan keterampilan bagi pekerja yang belum beradaptasi.'
+      },
+      {
+        id: 16,
+        number: 16,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Penyebab dan Pendorong Globalisasi',
+        category: 'Globalisasi & Dampaknya',
+        prompt:
+          'Di berbagai daerah, masyarakat semakin mudah berkomunikasi lintas negara, mengakses hiburan global, dan bekerja sama secara lintas batas karena kemajuan teknologi informasi dan transportasi modern, keterbukaan arus perdagangan, serta pertukaran informasi yang cepat. Berdasarkan literasi tersebut, faktor pendorong perubahan sosial dan globalisasi yang tampak adalah...',
+        options: [
+          { key: 'A', text: 'Perkembangan ilmu pengetahuan, teknologi komunikasi/transportasi, dan keterbukaan interaksi lintas budaya' },
+          { key: 'B', text: 'Penutupan total perbatasan negara dan larangan akses informasi luar' },
+          { key: 'C', text: 'Hilangnya seluruh lembaga pendidikan dan tradisi lokal secara serentak' },
+          { key: 'D', text: 'Penurunan drastis mobilitas manusia dan barang antarwilayah' }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Kemajuan teknologi komunikasi/transportasi dan keterbukaan interaksi mendorong globalisasi.'
+      },
+      {
+        id: 17,
+        number: 17,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Ciri Globalisasi',
+        category: 'Globalisasi & Dampaknya',
+        prompt:
+          'Salah satu karakteristik utama globalisasi dalam kehidupan masyarakat modern adalah...',
+        options: [
+          { key: 'A', text: 'Saling ketergantungan (interdependensi) antarbangsa serta semakin kaburnya batas-batas geografis dan ruang-waktu dalam pertukaran informasi, ekonomi, dan budaya' },
+          { key: 'B', text: 'Berhentinya seluruh arus modal, gagasan, dan budaya antarnegara' },
+          { key: 'C', text: 'Berlakunya satu bahasa dan satu tradisi lokal yang sama di seluruh desa tanpa pengaruh luar' },
+          { key: 'D', text: 'Ketertutupan mutlak setiap komunitas terhadap perkembangan dunia luar' }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Ciri utama globalisasi adalah saling ketergantungan global serta semakin kaburnya batas ruang dan waktu.'
+      },
+      {
+        id: 18,
+        number: 18,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Bentuk Globalisasi',
+        category: 'Globalisasi & Dampaknya',
+        prompt:
+          'Masuknya film, musik, kuliner, gaya hidup, dan tren mode dari berbagai negara yang memengaruhi kebiasaan sehari-hari masyarakat menunjukkan globalisasi di bidang ____________________.',
+        acceptedKeywords: ['budaya', 'kebudayaan', 'globalisasi budaya', 'sosial budaya'],
+        correctAnswer: 'Budaya',
+        explanation:
+          'Masuknya tren mode, hiburan, bahasa, dan gaya hidup lintas negara merupakan bentuk globalisasi budaya.'
+      },
+      {
+        id: 19,
+        number: 19,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Dampak Globalisasi',
+        category: 'Globalisasi & Dampaknya',
+        prompt:
+          'Globalisasi dapat menimbulkan dampak positif berupa pertukaran pengetahuan dan kemajuan teknologi, sekaligus dampak negatif berupa homogenisasi budaya atau erosi kearifan lokal apabila tidak disaring secara kritis oleh masyarakat. Pernyataan tersebut tepat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'Globalisasi membawa peluang pertukaran pengetahuan/teknologi sekaligus risiko erosi budaya lokal bila tidak disaring.'
+      },
+      {
+        id: 20,
+        number: 20,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Konsep Masyarakat Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Dalam narasi tentang globalisasi dan masyarakat digital, proses integrasi ekonomi, informasi, teknologi, dan budaya yang menghubungkan individu serta lembaga lintas negara sering ditopang oleh pilar utama berupa kemajuan teknologi informasi dan komunikasi serta ____________________.',
+        acceptedKeywords: [
+          'keterbukaan informasi',
+          'konektivitas digital',
+          'ekonomi global',
+          'internet',
+          'keterbukaan',
+          'konektivitas'
+        ],
+        correctAnswer: 'Keterbukaan informasi / konektivitas digital / ekonomi global',
+        explanation:
+          'Masyarakat digital ditopang oleh kemajuan teknologi informasi/komunikasi, jaringan internet, dan keterbukaan arus informasi/ekonomi.'
+      },
+      {
+        id: 21,
+        number: 21,
+        section: 'Bagian V. Isian Singkat',
+        type: 'ISIAN',
+        typeLabel: 'Isian Singkat',
+        topic: 'Ciri Kehidupan Masyarakat Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Berdasarkan literasi kehidupan masyarakat digital, masyarakat memanfaatkan gawai, jaringan internet, dan media sosial untuk berinteraksi tanpa batas ruang fisik serta mengakses informasi secara ____________________.',
+        acceptedKeywords: ['cepat', 'real-time', 'realtime', 'real time', 'daring', 'instan'],
+        correctAnswer: 'Cepat / real-time / daring',
+        explanation:
+          'Masyarakat digital dapat mengakses informasi dan berinteraksi secara cepat/real-time melalui jaringan digital.'
+      },
+      {
+        id: 22,
+        number: 22,
+        section: 'Bagian I. Pilihan Ganda',
+        type: 'PG',
+        typeLabel: 'Pilihan Ganda',
+        topic: 'Ciri Kehidupan Masyarakat Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Pada kehidupan masyarakat digital masa kini, aktivitas belajar, berbelanja, berdiskusi, dan berpartisipasi sosial banyak dilakukan melalui jaringan internet, gawai pintar, serta platform digital yang terhubung secara real-time. Ciri kehidupan masyarakat digital yang paling menonjol berdasarkan literasi tersebut adalah...',
+        options: [
+          { key: 'A', text: 'Konektivitas jaringan internet yang tinggi, interaksi berbasis platform digital, dan kecepatan pertukaran informasi secara real-time' },
+          { key: 'B', text: 'Ketergantungan penuh pada surat menyurat pos konvensional tanpa jaringan daring' },
+          { key: 'C', text: 'Tertutupnya akses informasi bagi warga yang terhubung internet' },
+          { key: 'D', text: 'Tidak adanya perubahan cara komunikasi dibandingkan masa pra-industri' }
+        ],
+        correctAnswer: 'A',
+        explanation:
+          'Ciri masyarakat digital mencakup konektivitas jaringan internet, platform digital, dan pertukaran informasi real-time.'
+      },
+      {
+        id: 23,
+        number: 23,
+        section: 'Bagian II. Pilihan Ganda Kompleks',
+        type: 'PGK',
+        typeLabel: 'Pilihan Ganda Kompleks (Pilih 2)',
+        topic: 'Peluang, Tantangan, dan Dampak Era Digitalisasi',
+        category: 'Masyarakat Digital & Solusi',
+        selectCount: 2,
+        prompt:
+          'Era digitalisasi membuka ruang pembelajaran terbuka, pemasaran produk lokal ke pasar yang lebih luas, dan akses informasi cepat, tetapi di sisi lain menghadirkan tantangan kesenjangan akses digital, penyebaran hoaks, dan risiko keamanan data pribadi. Analisis yang tepat mengenai peluang dan tantangan era digitalisasi tersebut adalah... (Pilih 2 jawaban)',
+        options: [
+          { key: 'A', text: 'Peluangnya terletak pada perluasan akses pendidikan, ekonomi kreatif/UMKM, dan efisiensi komunikasi' },
+          { key: 'B', text: 'Tantangannya terletak pada literasi digital yang belum merata, disinformasi/hoaks, dan perlindungan privasi/keamanan siber' },
+          { key: 'C', text: 'Era digitalisasi sepenuhnya menghilangkan risiko penipuan daring maupun hoaks tanpa upaya literasi' },
+          { key: 'D', text: 'Digitalisasi hanya berdampak negatif tanpa memberi manfaat ekonomi atau pendidikan apa pun' }
+        ],
+        correctAnswer: ['A', 'B'],
+        explanation:
+          'Peluang digitalisasi meliputi akses pendidikan dan pasar/ekonomi kreatif; tantangannya meliputi kesenjangan literasi digital, hoaks, dan keamanan data.'
+      },
+      {
+        id: 24,
+        number: 24,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Peluang, Tantangan, dan Dampak Era Digitalisasi',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Berdasarkan literasi tentang meluasnya pemanfaatan teknologi digital dalam pendidikan, perdagangan, dan pelayanan publik, evaluasilah peluang dan tantangan yang muncul serta dampaknya bagi masyarakat!',
+        rubricPoints: [
+          'Mengidentifikasi peluang (akses belajar luas, pasar digital/UMKM, layanan publik efisien).',
+          'Mengidentifikasi tantangan (kesenjangan akses/literasi digital, disinformasi, risiko privasi/keamanan data).',
+          'Mengevaluasi dampak bergantung pada regulasi, literasi, dan pemerataan infrastruktur.'
+        ],
+        correctAnswer:
+          'Evaluasi digitalisasi: peluang memperluas akses belajar, pasar digital, dan layanan publik; tantangan berupa kesenjangan akses/literasi digital, disinformasi, dan risiko privasi; dampaknya bergantung pada kesiapan regulasi, literasi, dan pemerataan infrastruktur.',
+        explanation:
+          'Evaluasi digitalisasi: peluang memperluas akses belajar, pasar digital, dan layanan publik; tantangan berupa kesenjangan akses/literasi digital, disinformasi, dan risiko privasi; dampaknya bergantung pada kesiapan regulasi, literasi, dan pemerataan infrastruktur.'
+      },
+      {
+        id: 25,
+        number: 25,
+        section: 'Bagian III. Benar–Salah',
+        type: 'BS',
+        typeLabel: 'Benar–Salah',
+        topic: 'Dampak dan Masalah Sosial Akibat Era Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Di era digital, meluasnya penggunaan media sosial dan transaksi daring dapat memicu masalah sosial seperti cyberbullying, penyebaran ujaran kebencian/hoaks, adiksi gawai, serta penipuan digital. Pernyataan tersebut tepat.',
+        options: [
+          { key: 'BENAR', text: 'BENAR' },
+          { key: 'SALAH', text: 'SALAH' }
+        ],
+        correctAnswer: 'BENAR',
+        explanation:
+          'Era digital dapat memunculkan masalah sosial seperti cyberbullying, hoaks, kecanduan gawai, dan penipuan daring.'
+      },
+      {
+        id: 26,
+        number: 26,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Dampak dan Masalah Sosial Akibat Era Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Uraikan penyebab munculnya salah satu masalah sosial akibat digitalisasi (misalnya penyebaran hoaks/disinformasi, cyberbullying, atau kecanduan gawai/media sosial) dalam kehidupan masyarakat!',
+        rubricPoints: [
+          'Menyebutkan masalah sosial digital yang spesifik (hoaks/disinformasi, cyberbullying, atau adiksi gawai).',
+          'Menguraikan faktor penyebab seperti literasi digital rendah, algoritma sensasional, kurangnya etika/pengawasan, atau tekanan sosial daring.'
+        ],
+        correctAnswer:
+          'Penyebab masalah sosial digital (misalnya penyebaran hoaks atau kecanduan gawai) antara lain rendahnya literasi digital/verifikasi informasi, algoritma yang mendorong sensasionalisme, kurangnya pengawasan/etika digital, serta tekanan sosial daring.',
+        explanation:
+          'Penyebab masalah sosial digital (misalnya penyebaran hoaks atau kecanduan gawai) antara lain rendahnya literasi digital/verifikasi informasi, algoritma yang mendorong sensasionalisme, kurangnya pengawasan/etika digital, serta tekanan sosial daring.'
+      },
+      {
+        id: 27,
+        number: 27,
+        section: 'Bagian VI. Uraian Panjang',
+        type: 'URAIAN',
+        typeLabel: 'Uraian Panjang',
+        topic: 'Dampak dan Masalah Sosial Akibat Era Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Kaitkan salah satu dampak digitalisasi dengan perubahan fenomena perilaku yang tampak dalam masyarakat sehari-hari (misalnya perubahan pola komunikasi, gaya konsumsi daring, atau cara berpartisipasi sosial)!',
+        rubricPoints: [
+          'Menyebutkan dampak digitalisasi tertentu.',
+          'Menghubungkannya dengan perubahan perilaku sehari-hari (pola komunikasi instan, belanja daring/e-commerce, atau partisipasi sosial digital).'
+        ],
+        correctAnswer:
+          'Kaitan dampak digitalisasi dengan perilaku masyarakat: misalnya kemudahan transaksi dan media sosial mengubah pola belanja menjadi serba daring, cara berkomunikasi menjadi lebih instan/singkat, serta pola mobilisasi/kepedulian sosial yang dapat berlangsung melalui ruang digital.',
+        explanation:
+          'Kaitan dampak digitalisasi dengan perilaku masyarakat: misalnya kemudahan transaksi dan media sosial mengubah pola belanja menjadi serba daring, cara berkomunikasi menjadi lebih instan/singkat, serta pola mobilisasi/kepedulian sosial yang dapat berlangsung melalui ruang digital.'
+      },
+      {
+        id: 28,
+        number: 28,
+        section: 'Bagian IV. Menjodohkan / Mencocokkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan',
+        topic: 'Dampak dan Masalah Sosial Akibat Era Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Tentukan dampak digitalisasi yang muncul dalam masyarakat pada fenomena maraknya belanja daring dan konten hiburan instan. Pasangkan dengan pilihan jawaban yang tepat!',
+        matchItems: [
+          {
+            id: 'item_28',
+            label: '28. Dampak belanja daring & konten hiburan instan dalam keseharian'
+          }
+        ],
+        options: [
+          { key: 'A', text: 'Faktor pendorong (kemajuan pendidikan, kontak budaya, inovasi) vs faktor penghambat (sikap tertutup, adat kaku, hambatan akses)' },
+          { key: 'B', text: 'Efisiensi dan produktivitas kerja meningkat, tetapi muncul risiko ketimpangan keterampilan/kesenjangan kerja bagi yang belum beradaptasi' },
+          { key: 'C', text: 'Pergeseran pola konsumsi ke arah digital/e-commerce serta perubahan kebiasaan hiburan dan interaksi sosial masyarakat' },
+          { key: 'D', text: 'Cyberbullying (perundungan siber) / disinformasi atau hoaks digital' },
+          { key: 'E', text: 'Penguatan literasi digital dan kritis, regulasi/etika bermedia sosial, pelatihan keterampilan baru, serta pelestarian budaya lokal' },
+          { key: 'F', text: 'Menghapus seluruh akses internet dan menghentikan seluruh kegiatan ekonomi digital' },
+          { key: 'G', text: 'Membiarkan penyebaran hoaks tanpa edukasi maupun verifikasi informasi' },
+          { key: 'H', text: 'Menghilangkan seluruh lembaga pendidikan formal dan informal' }
+        ],
+        correctAnswer: { item_28: 'C' },
+        explanation:
+          'Maraknya belanja daring dan hiburan instan mendorong pergeseran pola konsumsi ke arah e-commerce serta perubahan kebiasaan hiburan dan interaksi sosial.'
+      },
+      {
+        id: 29,
+        number: 29,
+        section: 'Bagian IV. Menjodohkan / Mencocokkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan',
+        topic: 'Dampak dan Masalah Sosial Akibat Era Digital',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Sebutkan istilah masalah sosial yang muncul akibat digitalisasi ketika seseorang mengalami tekanan/intimidasi berulang di media sosial atau ruang daring. Pasangkan dengan pilihan jawaban yang tepat!',
+        matchItems: [
+          {
+            id: 'item_29',
+            label: '29. Tekanan/intimidasi berulang di media sosial atau ruang daring'
+          }
+        ],
+        options: [
+          { key: 'A', text: 'Faktor pendorong (kemajuan pendidikan, kontak budaya, inovasi) vs faktor penghambat (sikap tertutup, adat kaku, hambatan akses)' },
+          { key: 'B', text: 'Efisiensi dan produktivitas kerja meningkat, tetapi muncul risiko ketimpangan keterampilan/kesenjangan kerja bagi yang belum beradaptasi' },
+          { key: 'C', text: 'Pergeseran pola konsumsi ke arah digital/e-commerce serta perubahan kebiasaan hiburan dan interaksi sosial masyarakat' },
+          { key: 'D', text: 'Cyberbullying (perundungan siber) / disinformasi atau hoaks digital' },
+          { key: 'E', text: 'Penguatan literasi digital dan kritis, regulasi/etika bermedia sosial, pelatihan keterampilan baru, serta pelestarian budaya lokal' },
+          { key: 'F', text: 'Menghapus seluruh akses internet dan menghentikan seluruh kegiatan ekonomi digital' },
+          { key: 'G', text: 'Membiarkan penyebaran hoaks tanpa edukasi maupun verifikasi informasi' },
+          { key: 'H', text: 'Menghilangkan seluruh lembaga pendidikan formal dan informal' }
+        ],
+        correctAnswer: { item_29: 'D' },
+        explanation:
+          'Intimidasi berulang di ruang daring merujuk pada cyberbullying (perundungan siber) beserta isu disinformasi/hoaks digital.'
+      },
+      {
+        id: 30,
+        number: 30,
+        section: 'Bagian IV. Menjodohkan / Mencocokkan',
+        type: 'JODOH',
+        typeLabel: 'Menjodohkan',
+        topic: 'Solusi dalam Mengurangi Dampak Masalah Sosial Akibat Globalisasi dan Digitalisasi',
+        category: 'Masyarakat Digital & Solusi',
+        prompt:
+          'Berikan saran upaya yang diperlukan dalam mengatasi masalah sosial akibat globalisasi dan digitalisasi. Pasangkan dengan pilihan jawaban yang tepat!',
+        matchItems: [
+          {
+            id: 'item_30',
+            label: '30. Upaya solutif mengatasi masalah sosial akibat globalisasi & digitalisasi'
+          }
+        ],
+        options: [
+          { key: 'A', text: 'Faktor pendorong (kemajuan pendidikan, kontak budaya, inovasi) vs faktor penghambat (sikap tertutup, adat kaku, hambatan akses)' },
+          { key: 'B', text: 'Efisiensi dan produktivitas kerja meningkat, tetapi muncul risiko ketimpangan keterampilan/kesenjangan kerja bagi yang belum beradaptasi' },
+          { key: 'C', text: 'Pergeseran pola konsumsi ke arah digital/e-commerce serta perubahan kebiasaan hiburan dan interaksi sosial masyarakat' },
+          { key: 'D', text: 'Cyberbullying (perundungan siber) / disinformasi atau hoaks digital' },
+          { key: 'E', text: 'Penguatan literasi digital dan kritis, regulasi/etika bermedia sosial, pelatihan keterampilan baru, serta pelestarian budaya lokal' },
+          { key: 'F', text: 'Menghapus seluruh akses internet dan menghentikan seluruh kegiatan ekonomi digital' },
+          { key: 'G', text: 'Membiarkan penyebaran hoaks tanpa edukasi maupun verifikasi informasi' },
+          { key: 'H', text: 'Menghilangkan seluruh lembaga pendidikan formal dan informal' }
+        ],
+        correctAnswer: { item_30: 'E' },
+        explanation:
+          'Solusi komprehensif mencakup penguatan literasi digital kritis, regulasi/etika bermedia sosial, upskilling/pelatihan, dan pelestarian budaya lokal.'
+      }
+    ];
+
+    // =========================================================================
+    // 2. STORAGE KEYS & APPLICATION STATE
+    // =========================================================================
+    const STORAGE_KEYS = {
+      QUESTIONS: 'smartexam_sosiologi_questions_v1',
+      CONFIG: 'smartexam_sosiologi_config_v1',
+      HISTORY: 'smartexam_sosiologi_history_v1'
+    };
+
+    function loadJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : structuredClone(fallback);
+      } catch (err) {
+        console.error('Gagal memuat data dari localStorage:', err);
+        return structuredClone(fallback);
+      }
+    }
+
+    function saveJSON(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error('Gagal menyimpan data ke localStorage:', err);
+      }
+    }
+
+    const state = {
+      currentView: 'home', // 'home' | 'exam' | 'results' | 'history' | 'admin'
+      questions: loadJSON(STORAGE_KEYS.QUESTIONS, DEFAULT_QUESTIONS),
+      config: loadJSON(STORAGE_KEYS.CONFIG, DEFAULT_EXAM_CONFIG),
+      history: loadJSON(STORAGE_KEYS.HISTORY, []),
+
+      // Active Exam Session State
+      exam: {
+        active: false,
+        sessionQuestions: [],
+        currentIndex: 0,
+        answers: {},        // { [questionId]: value }
+        submitted: {},      // { [questionId]: boolean }
+        evaluations: {},    // { [questionId]: { isCorrect: boolean, statusText: string, rubricMet: boolean } }
+        remainingSeconds: 120 * 60,
+        totalSeconds: 120 * 60,
+        warningShown: false,
+        timerInterval: null,
+        startedAt: null
+      },
+
+      // Latest Exam Result Summary
+      latestResult: null,
+
+      // Admin UI State
+      admin: {
+        editingId: null,
+        filterType: 'ALL',
+        searchQuery: ''
+      }
+    };
+
+    // Active Chart instances to clean up before re-rendering
+    let breakdownChartInstance = null;
+    let historyChartInstance = null;
+
+    // =========================================================================
+    // 3. UTILITY & TOAST / MODAL HELPERS
+    // =========================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const styles = {
+        info: 'bg-blue-600 text-white border-blue-700',
+        success: 'bg-emerald-600 text-white border-emerald-700',
+        warning: 'bg-amber-500 text-white border-amber-600',
+        danger: 'bg-rose-600 text-white border-rose-700'
+      };
+
+      const icons = {
+        info: 'info',
+        success: 'check-circle-2',
+        warning: 'alert-triangle',
+        danger: 'alert-octagon'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg text-sm font-medium animate-fade-in ${styles[type] || styles.info}`;
+      toast.innerHTML = `
+        <i data-lucide="${icons[type] || 'info'}" class="w-4 h-4 shrink-0"></i>
+        <span class="flex-1">${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons({ nodes: [toast] });
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        toast.style.transition = 'all 0.2s ease';
+        setTimeout(() => toast.remove(), 220);
+      }, 3600);
+    }
+
+    function openConfirmModal({ title, message, confirmText = 'Ya, Lanjutkan', cancelText = 'Batal', danger = false }) {
+      return new Promise((resolve) => {
+        const backdrop = document.getElementById('modalBackdrop');
+        const titleEl = document.getElementById('modalTitle');
+        const msgEl = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        const iconWrap = document.getElementById('modalIconWrap');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        confirmBtn.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+
+        if (danger) {
+          confirmBtn.className = 'px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-sm';
+          iconWrap.className = 'w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0';
+        } else {
+          confirmBtn.className = 'px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm';
+          iconWrap.className = 'w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0';
+        }
+
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('flex');
+        lucide.createIcons({ nodes: [backdrop] });
+
+        const cleanup = (result) => {
+          backdrop.classList.add('hidden');
+          backdrop.classList.remove('flex');
+          confirmBtn.removeEventListener('click', onConfirm);
+          cancelBtn.removeEventListener('click', onCancel);
+          backdrop.removeEventListener('click', onBackdrop);
+          resolve(result);
+        };
+
+        const onConfirm = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+        const onBackdrop = (e) => {
+          if (e.target === backdrop) cleanup(false);
+        };
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+        backdrop.addEventListener('click', onBackdrop);
+      });
+    }
+
+    function formatSeconds(sec) {
+      const safe = Math.max(0, Math.floor(sec));
+      const hrs = Math.floor(safe / 3600);
+      const mins = Math.floor((safe % 3600) / 60);
+      const secs = safe % 60;
+      if (hrs > 0) {
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function formatDurationHuman(sec) {
+      const safe = Math.max(0, Math.floor(sec));
+      const mins = Math.floor(safe / 60);
+      const secs = safe % 60;
+      if (mins === 0) return `${secs} detik`;
+      return `${mins} menit ${secs} detik`;
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // =========================================================================
+    // 4. NAVIGATION & GUARD LOGIC
+    // =========================================================================
+    async function navigateTo(targetView) {
+      if (state.currentView === targetView && targetView !== 'exam') return;
+
+      // Guard if leaving an active exam
+      if (state.exam.active && targetView !== 'exam') {
+        const confirmed = await openConfirmModal({
+          title: 'Ujian Sedang Berlangsung',
+          message: 'Anda sedang mengerjakan ujian. Jika berpindah halaman sekarang, sesi ujian aktif akan dibatalkan dan tidak tersimpan ke riwayat. Yakin ingin keluar?',
+          confirmText: 'Keluar dari Ujian',
+          cancelText: 'Lanjutkan Ujian',
+          danger: true
+        });
+        if (!confirmed) return;
+        stopExamTimer();
+        state.exam.active = false;
+        updateHeaderTimerBadge();
+      }
+
+      state.currentView = targetView;
+      updateNavActiveStyles();
+      renderApp();
+    }
+
+    function updateNavActiveStyles() {
+      document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach((btn) => {
+        const isCurrent = btn.dataset.nav === state.currentView;
+        if (isCurrent) {
+          btn.className = btn.className.replace(/text-slate-600|hover:bg-slate-100/g, '');
+          btn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        } else {
+          btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+          if (!btn.className.includes('text-slate-600')) {
+            btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 5. TIMER ENGINE (CONTINUOUS ACROSS NAVIGATION)
+    // =========================================================================
+    function startExamTimer() {
+      stopExamTimer();
+      updateHeaderTimerBadge();
+
+      state.exam.timerInterval = setInterval(() => {
+        if (!state.exam.active) {
+          stopExamTimer();
+          return;
+        }
+
+        state.exam.remainingSeconds -= 1;
+        updateTimerDisplays();
+
+        // 5-minute warning (300 seconds)
+        if (state.exam.remainingSeconds === 300 && !state.exam.warningShown) {
+          state.exam.warningShown = true;
+          showToast('Peringatan: Sisa waktu ujian tinggal 5 menit!', 'warning');
+          const banner = document.getElementById('fiveMinWarningBanner');
+          if (banner) banner.classList.remove('hidden');
+        }
+
+        // Auto-submit when time reaches 0
+        if (state.exam.remainingSeconds <= 0) {
+          state.exam.remainingSeconds = 0;
+          updateTimerDisplays();
+          stopExamTimer();
+          showToast('Waktu ujian telah habis! Jawaban otomatis dikoreksi.', 'danger');
+          finalizeExam(true);
+        }
+      }, 1000);
+    }
+
+    function stopExamTimer() {
+      if (state.exam.timerInterval) {
+        clearInterval(state.exam.timerInterval);
+        state.exam.timerInterval = null;
+      }
+    }
+
+    function updateHeaderTimerBadge() {
+      const badge = document.getElementById('headerTimerBadge');
+      const text = document.getElementById('headerTimerText');
+      if (!badge || !text) return;
+
+      if (state.exam.active) {
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+        text.textContent = formatSeconds(state.exam.remainingSeconds);
+
+        if (state.exam.remainingSeconds <= 300) {
+          badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 border border-rose-300 timer-urgent';
+        } else {
+          badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200';
+        }
+      } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+      }
+    }
+
+    function updateTimerDisplays() {
+      updateHeaderTimerBadge();
+      const examTimerEl = document.getElementById('examCountdownText');
+      const examTimerBox = document.getElementById('examTimerBox');
+      if (examTimerEl) {
+        examTimerEl.textContent = formatSeconds(state.exam.remainingSeconds);
+      }
+      if (examTimerBox && state.exam.remainingSeconds <= 300) {
+        examTimerBox.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 font-bold text-sm timer-urgent';
+      }
+    }
+
+    // =========================================================================
+    // 6. ANSWER EVALUATION & GRADING LOGIC
+    // =========================================================================
+    function hasAnsweredQuestion(q, answerVal) {
+      if (answerVal === undefined || answerVal === null) return false;
+      if (q.type === 'PG' || q.type === 'BS') {
+        return typeof answerVal === 'string' && answerVal.trim().length > 0;
+      }
+      if (q.type === 'PGK') {
+        return Array.isArray(answerVal) && answerVal.length > 0;
+      }
+      if (q.type === 'ISIAN') {
+        return typeof answerVal === 'string' && answerVal.trim().length > 0;
+      }
+      if (q.type === 'JODOH') {
+        if (typeof answerVal !== 'object') return false;
+        const items = q.matchItems || [];
+        return items.length > 0 && items.every((it) => Boolean(answerVal[it.id]));
+      }
+      if (q.type === 'URAIAN') {
+        return typeof answerVal === 'string' && answerVal.trim().length > 0;
+      }
+      return false;
+    }
+
+    function evaluateQuestion(q, answerVal, rubricSelfCheck = true) {
+      if (!hasAnsweredQuestion(q, answerVal)) {
+        return {
+          isCorrect: false,
+          answered: false,
+          statusText: 'Belum Dijawab',
+          rubricMet: false
+        };
+      }
+
+      if (q.type === 'PG' || q.type === 'BS') {
+        const isCorrect = String(answerVal) === String(q.correctAnswer);
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect ? 'Jawaban Benar' : 'Jawaban Kurang Tepat / Salah',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'PGK') {
+        const expected = Array.isArray(q.correctAnswer) ? [...q.correctAnswer].sort() : [];
+        const actual = Array.isArray(answerVal) ? [...answerVal].sort() : [];
+        const isCorrect =
+          expected.length === actual.length &&
+          expected.every((val, idx) => val === actual[idx]);
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect
+            ? 'Jawaban Benar (2 Pilihan Tepat)'
+            : 'Jawaban Belum Tepat (Pilih tepat 2 opsi sesuai kunci)',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'ISIAN') {
+        const normalized = String(answerVal).toLowerCase().trim();
+        const keywords = Array.isArray(q.acceptedKeywords) && q.acceptedKeywords.length > 0
+          ? q.acceptedKeywords.map((k) => String(k).toLowerCase().trim())
+          : [String(q.correctAnswer || '').toLowerCase().trim()];
+
+        const isCorrect = keywords.some((kw) => kw && (normalized === kw || normalized.includes(kw)));
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect ? 'Jawaban Benar' : 'Jawaban Kurang Sesuai Kunci',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'JODOH') {
+        const expectedMap = q.correctAnswer || {};
+        const items = q.matchItems || [];
+        const isCorrect =
+          items.length > 0 &&
+          items.every((it) => String(answerVal[it.id] || '') === String(expectedMap[it.id] || ''));
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect ? 'Pasangan Tepat (Benar)' : 'Pasangan Belum Tepat',
+          rubricMet: isCorrect
+        };
+      }
+
+      if (q.type === 'URAIAN') {
+        const isCorrect = Boolean(rubricSelfCheck);
+        return {
+          isCorrect,
+          answered: true,
+          statusText: isCorrect
+            ? 'Dinilai Benar (Memenuhi Poin Pembahasan)'
+            : 'Perlu Penyempurnaan (Belum Memenuhi Poin Kunci)',
+          rubricMet: isCorrect
+        };
+      }
+
+      return { isCorrect: false, answered: true, statusText: 'Tercatat', rubricMet: false };
+    }
+
+    function startNewExamSession(customMinutes = null) {
+      const bank = state.questions;
+      if (!bank || bank.length === 0) {
+        showToast('Tidak ada soal tersedia. Tambahkan soal di panel Admin.', 'danger');
+        return;
+      }
+
+      const minutes = Number(customMinutes) > 0 ? Number(customMinutes) : Number(state.config.durationMinutes) || 120;
+      const totalSec = minutes * 60;
+
+      // Shuffle questions and shuffle choices for PG / PGK / JODOH
+      const shuffledQuestions = shuffleArray(bank).map((q) => {
+        const clone = structuredClone(q);
+        if ((clone.type === 'PG' || clone.type === 'PGK' || clone.type === 'JODOH') && Array.isArray(clone.options)) {
+          clone.shuffledOptions = shuffleArray(clone.options);
+        }
+        return clone;
+      });
+
+      state.exam = {
+        active: true,
+        sessionQuestions: shuffledQuestions,
+        currentIndex: 0,
+        answers: {},
+        submitted: {},
+        evaluations: {},
+        remainingSeconds: totalSec,
+        totalSeconds: totalSec,
+        warningShown: false,
+        timerInterval: null,
+        startedAt: new Date().toISOString()
+      };
+
+      state.currentView = 'exam';
+      updateNavActiveStyles();
+      renderApp();
+      startExamTimer();
+      showToast(`Ujian dimulai (${minutes} menit). Urutan soal & opsi telah diacak.`, 'success');
+    }
+
+    function submitCurrentQuestion() {
+      const q = state.exam.sessionQuestions[state.exam.currentIndex];
+      if (!q) return;
+
+      const ans = state.exam.answers[q.id];
+      if (!hasAnsweredQuestion(q, ans)) {
+        showToast('Silakan pilih atau isi jawaban terlebih dahulu sebelum menekan "Jawab".', 'warning');
+        return;
+      }
+
+      if (q.type === 'PGK') {
+        const required = q.selectCount || 2;
+        if (!Array.isArray(ans) || ans.length !== required) {
+          showToast(`Soal Pilihan Ganda Kompleks ini mewajibkan memilih tepat ${required} jawaban.`, 'warning');
+          return;
+        }
+      }
+
+      const rubricCheckbox = document.getElementById(`rubricMet_${q.id}`);
+      const rubricMet = rubricCheckbox ? rubricCheckbox.checked : true;
+
+      const evalResult = evaluateQuestion(q, ans, rubricMet);
+      state.exam.submitted[q.id] = true;
+      state.exam.evaluations[q.id] = evalResult;
+
+      renderApp();
+      showToast(evalResult.statusText, evalResult.isCorrect ? 'success' : 'warning');
+    }
+
+    async function confirmFinishExam() {
+      const total = state.exam.sessionQuestions.length;
+      const answeredCount = state.exam.sessionQuestions.filter((q) => hasAnsweredQuestion(q, state.exam.answers[q.id])).length;
+      const unansweredCount = total - answeredCount;
+
+      const msg =
+        unansweredCount > 0
+          ? `Masih ada ${unansweredCount} dari ${total} soal yang belum dijawab. Apakah Anda yakin ingin menyelesaikan ujian dan melihat hasil nilai?`
+          : `Seluruh ${total} soal telah diisi. Apakah Anda yakin ingin mengakhiri ujian dan melihat hasil nilai?`;
+
+      const ok = await openConfirmModal({
+        title: 'Selesaikan Ujian?',
+        message: msg,
+        confirmText: 'Selesai & Lihat Hasil',
+        cancelText: 'Kembali Mengerjakan',
+        danger: false
+      });
+
+      if (ok) {
+        finalizeExam(false);
+      }
+    }
+
+    function finalizeExam(autoByTimeout = false) {
+      stopExamTimer();
+      const sessionQs = state.exam.sessionQuestions;
+      const totalQuestions = sessionQs.length;
+
+      let correctCount = 0;
+      let wrongCount = 0;
+      let unansweredCount = 0;
+
+      const detailItems = sessionQs.map((q, idx) => {
+        const ans = state.exam.answers[q.id];
+        const isAnswered = hasAnsweredQuestion(q, ans);
+
+        let ev = state.exam.evaluations[q.id];
+        if (!ev) {
+          const rubricCheckbox = document.getElementById(`rubricMet_${q.id}`);
+          const rubricMet = rubricCheckbox ? rubricCheckbox.checked : false;
+          ev = evaluateQuestion(q, ans, rubricMet);
+        }
+
+        if (!isAnswered) {
+          unansweredCount += 1;
+        } else if (ev.isCorrect) {
+          correctCount += 1;
+        } else {
+          wrongCount += 1;
+        }
+
+        return {
+          order: idx + 1,
+          question: q,
+          userAnswer: ans,
+          isAnswered,
+          isCorrect: isAnswered && ev.isCorrect,
+          statusText: !isAnswered ? 'Belum Dijawab' : ev.statusText
+        };
+      });
+
+      // Rumus resmi: Nilai = (Jumlah jawaban benar / Total soal) × 100
+      const rawScore = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+      const finalScore = Number(rawScore.toFixed(2));
+      const successRate = totalQuestions > 0 ? Number(((correctCount / totalQuestions) * 100).toFixed(1)) : 0;
+      const timeUsedSeconds = Math.max(1, state.exam.totalSeconds - state.exam.remainingSeconds);
+      const passed = finalScore >= (Number(state.config.passingGrade) || 75);
+
+      const attemptRecord = {
+        id: 'att_' + Date.now(),
+        date: new Date().toISOString(),
+        examTitle: state.config.title,
+        score: finalScore,
+        correctCount,
+        wrongCount,
+        unansweredCount,
+        totalQuestions,
+        successRate,
+        timeUsedSeconds,
+        passed,
+        passingGrade: Number(state.config.passingGrade) || 75,
+        autoByTimeout
+      };
+
+      state.history.unshift(attemptRecord);
+      saveJSON(STORAGE_KEYS.HISTORY, state.history);
+
+      state.latestResult = {
+        ...attemptRecord,
+        details: detailItems
+      };
+
+      state.exam.active = false;
+      updateHeaderTimerBadge();
+
+      state.currentView = 'results';
+      updateNavActiveStyles();
+      renderApp();
+    }
+
+    function getStatsFromHistory() {
+      if (!state.history || state.history.length === 0) {
+        return { count: 0, best: 0, average: 0 };
+      }
+      const scores = state.history.map((h) => Number(h.score) || 0);
+      const best = Math.max(...scores);
+      const sum = scores.reduce((acc, v) => acc + v, 0);
+      const average = Number((sum / scores.length).toFixed(2));
+      return {
+        count: scores.length,
+        best: Number(best.toFixed(2)),
+        average
+      };
+    }
+
+    // =========================================================================
+    // 7. RENDERERS FOR EACH VIEW
+    // =========================================================================
+    function renderApp() {
+      const container = document.getElementById('appContainer');
+      if (!container) return;
+
+      if (state.currentView === 'home') {
+        container.innerHTML = renderHomeView();
+        bindHomeEvents();
+      } else if (state.currentView === 'exam') {
+        container.innerHTML = renderExamView();
+        bindExamEvents();
+        updateTimerDisplays();
+      } else if (state.currentView === 'results') {
+        container.innerHTML = renderResultsView();
+        bindResultsEvents();
+        renderResultsChart();
+      } else if (state.currentView === 'history') {
+        container.innerHTML = renderHistoryView();
+        bindHistoryEvents();
+        renderHistoryChart();
+      } else if (state.currentView === 'admin') {
+        container.innerHTML = renderAdminView();
+        bindAdminEvents();
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- 7A. HOME / DASHBOARD VIEW ---
+    function renderHomeView() {
+      const cfg = state.config;
+      const totalQ = state.questions.length;
+      const stats = getStatsFromHistory();
+
+      // Count question types
+      const typeCounts = state.questions.reduce((acc, q) => {
+        acc[q.type] = (acc[q.type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <!-- Hero Banner -->
+          <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-blue-600 to-violet-700 text-white p-6 sm:p-10 shadow-xl shadow-blue-900/10">
+            <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+            <div class="absolute -left-10 -bottom-20 w-72 h-72 rounded-full bg-violet-400/20 blur-2xl pointer-events-none"></div>
+
+            <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div class="lg:col-span-8 space-y-4">
+                <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-xs font-semibold tracking-wide">
+                  <i data-lucide="school" class="w-3.5 h-3.5"></i>
+                  <span>${cfg.school}</span>
+                  <span>•</span>
+                  <span>${cfg.semester}</span>
+                  <span>•</span>
+                  <span>${cfg.academicYear}</span>
+                </div>
+
+                <h1 class="font-display font-bold text-2xl sm:text-4xl leading-tight">
+                  ${cfg.title}
+                </h1>
+
+                <p class="text-blue-100 text-sm sm:text-base leading-relaxed max-w-3xl">
+                  ${cfg.description}
+                </p>
+
+                <!-- Quick Config & Start CTA -->
+                <div class="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div class="flex items-center gap-2 bg-white/15 backdrop-blur px-3.5 py-2.5 rounded-2xl border border-white/20">
+                    <i data-lucide="clock" class="w-4 h-4 text-blue-100"></i>
+                    <label for="homeDurationSelect" class="text-xs font-medium text-blue-100">Durasi:</label>
+                    <select id="homeDurationSelect" class="bg-transparent text-white font-semibold text-sm focus:outline-none cursor-pointer">
+                      <option value="30" class="text-slate-900" ${cfg.durationMinutes === 30 ? 'selected' : ''}>30 Menit</option>
+                      <option value="60" class="text-slate-900" ${cfg.durationMinutes === 60 ? 'selected' : ''}>60 Menit</option>
+                      <option value="90" class="text-slate-900" ${cfg.durationMinutes === 90 ? 'selected' : ''}>90 Menit</option>
+                      <option value="120" class="text-slate-900" ${cfg.durationMinutes === 120 ? 'selected' : ''}>120 Menit (Standar ASAS)</option>
+                      ${![30, 60, 90, 120].includes(Number(cfg.durationMinutes)) ? `<option value="${cfg.durationMinutes}" class="text-slate-900" selected>${cfg.durationMinutes} Menit (Custom)</option>` : ''}
+                    </select>
+                  </div>
+
+                  <button id="startExamBtn" class="px-6 py-3 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-display font-bold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer" type="button">
+                    <i data-lucide="play-circle" class="w-5 h-5"></i>
+                    <span>Mulai Ujian</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Performance Summary Card -->
+              <div class="lg:col-span-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold uppercase tracking-wider text-blue-100">Statistik Peserta</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-400/30 text-white">
+                    KKM: ${cfg.passingGrade}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-white/10 rounded-xl p-3.5">
+                    <div class="text-xs text-blue-100">Nilai Terbaik</div>
+                    <div class="font-display font-bold text-2xl mt-0.5">${stats.count > 0 ? stats.best : '—'}</div>
+                  </div>
+                  <div class="bg-white/10 rounded-xl p-3.5">
+                    <div class="text-xs text-blue-100">Rata-Rata Nilai</div>
+                    <div class="font-display font-bold text-2xl mt-0.5">${stats.count > 0 ? stats.average : '—'}</div>
+                  </div>
+                </div>
+
+                <div class="pt-1 flex items-center justify-between text-xs text-blue-100 border-t border-white/15">
+                  <span>Total Percobaan: <strong class="text-white">${stats.count}x</strong></span>
+                  <button id="homeToHistoryBtn" class="underline hover:text-white font-medium cursor-pointer" type="button">
+                    Lihat Riwayat →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Exam Overview Cards -->
+          <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Jumlah Soal</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="list-checks" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">${totalQ} Butir</div>
+              <p class="text-xs text-slate-500 mt-1">6 variasi bentuk soal ASAS</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Durasi Default</span>
+                <div class="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                  <i data-lucide="hourglass" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">${cfg.durationMinutes} Menit</div>
+              <p class="text-xs text-slate-500 mt-1">Auto-submit saat waktu habis</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Batas Lulus</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">${cfg.passingGrade} / 100</div>
+              <p class="text-xs text-slate-500 mt-1">Rumus: (Benar / Total) × 100</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Pembahasan</span>
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <i data-lucide="book-open-check" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="font-display font-bold text-2xl text-slate-900 mt-2">Instan</div>
+              <p class="text-xs text-slate-500 mt-1">Tampil setelah menekan Jawab</p>
+            </div>
+          </section>
+
+          <!-- Question Format Breakdown & Pre-Exam Instructions -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Pre-exam Instructions -->
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                  <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h2 class="font-display font-bold text-lg text-slate-900">Petunjuk Pengerjaan Ujian</h2>
+                  <p class="text-xs text-slate-500">Harap baca ketentuan berikut sebelum memulai sesi ujian</p>
+                </div>
+              </div>
+
+              <ol class="space-y-3">
+                ${cfg.instructions
+                  .map(
+                    (inst, idx) => `
+                  <li class="flex items-start gap-3 text-sm text-slate-700 bg-slate-50/80 p-3.5 rounded-xl border border-slate-100">
+                    <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                      ${idx + 1}
+                    </span>
+                    <span class="leading-relaxed">${inst}</span>
+                  </li>
+                `
+                  )
+                  .join('')}
+              </ol>
+            </div>
+
+            <!-- Question Types & Categories -->
+            <div class="lg:col-span-5 space-y-6">
+              <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+                <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                  <i data-lucide="layers" class="w-5 h-5 text-violet-600"></i>
+                  <span>Struktur Bentuk Soal</span>
+                </h2>
+                <div class="space-y-2.5 text-sm">
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-blue-50/70 border border-blue-100">
+                    <span class="font-medium text-slate-800">Pilihan Ganda (PG)</span>
+                    <span class="font-bold text-blue-700">${typeCounts.PG || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-violet-50/70 border border-violet-100">
+                    <span class="font-medium text-slate-800">Pilihan Ganda Kompleks (Pilih 2)</span>
+                    <span class="font-bold text-violet-700">${typeCounts.PGK || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Benar–Salah</span>
+                    <span class="font-bold text-slate-700">${typeCounts.BS || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Menjodohkan (A–H)</span>
+                    <span class="font-bold text-slate-700">${typeCounts.JODOH || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Isian Singkat</span>
+                    <span class="font-bold text-slate-700">${typeCounts.ISIAN || 0} Soal</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <span class="font-medium text-slate-800">Uraian Panjang</span>
+                    <span class="font-bold text-slate-700">${typeCounts.URAIAN || 0} Soal</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3">
+                <h3 class="font-display font-bold text-base text-slate-900">Topik / Kategori Materi</h3>
+                <div class="flex flex-wrap gap-2">
+                  ${cfg.categories
+                    .map(
+                      (cat) => `
+                    <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/70">
+                      ${cat}
+                    </span>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function bindHomeEvents() {
+      const startBtn = document.getElementById('startExamBtn');
+      const durSelect = document.getElementById('homeDurationSelect');
+      const histBtn = document.getElementById('homeToHistoryBtn');
+
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          const chosenMin = durSelect ? Number(durSelect.value) : state.config.durationMinutes;
+          startNewExamSession(chosenMin);
+        });
+      }
+
+      if (histBtn) {
+        histBtn.addEventListener('click', () => navigateTo('history'));
+      }
+    }
+
+    // --- 7B. EXAM ENGINE VIEW ---
+    function renderExamView() {
+      if (!state.exam.active || state.exam.sessionQuestions.length === 0) {
+        return `
+          <div class="bg-white rounded-2xl p-8 border border-slate-200 text-center max-w-lg mx-auto space-y-4 animate-fade-in">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+              <i data-lucide="file-question" class="w-7 h-7"></i>
+            </div>
+            <h2 class="font-display font-bold text-xl text-slate-900">Belum Ada Sesi Ujian Aktif</h2>
+            <p class="text-sm text-slate-600">Silakan mulai ujian dari halaman Beranda untuk mengerjakan 30 soal ASAS Sosiologi Kelas XII.</p>
+            <button id="emptyExamStartBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors" type="button">
+              Mulai Ujian Sekarang
+            </button>
+          </div>
+        `;
+      }
+
+      const sessionQs = state.exam.sessionQuestions;
+      const idx = state.exam.currentIndex;
+      const q = sessionQs[idx];
+      const total = sessionQs.length;
+      const isSubmitted = Boolean(state.exam.submitted[q.id]);
+      const evaluation = state.exam.evaluations[q.id];
+      const userAns = state.exam.answers[q.id];
+
+      const answeredCount = sessionQs.filter((item) => hasAnsweredQuestion(item, state.exam.answers[item.id])).length;
+      const showFiveMinBanner = state.exam.remainingSeconds <= 300 && state.exam.remainingSeconds > 0;
+
+      return `
+        <div class="space-y-5 animate-fade-in">
+          <!-- 5-Minute Warning Banner -->
+          <div id="fiveMinWarningBanner" class="${showFiveMinBanner ? '' : 'hidden'} bg-rose-50 border border-rose-300 text-rose-800 px-4 py-3 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
+            <div class="flex items-center gap-2.5 text-sm font-semibold">
+              <i data-lucide="alarm-clock" class="w-5 h-5 text-rose-600 shrink-0"></i>
+              <span>Perhatian: Sisa waktu ujian kurang dari 5 menit! Pastikan jawaban Anda sudah tersimpan.</span>
+            </div>
+          </div>
+
+          <!-- Exam Top Bar: Progress & Countdown Timer -->
+          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-100 text-blue-800">
+                  Soal ${idx + 1} dari ${total}
+                </span>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-100 text-violet-800">
+                  ${q.typeLabel}
+                </span>
+                <span class="text-xs text-slate-500 font-medium">
+                  • ${q.topic}
+                </span>
+              </div>
+              <div class="w-full max-w-md bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-violet-600 h-full rounded-full transition-all duration-300" style="width: ${Math.round(((idx + 1) / total) * 100)}%"></div>
+              </div>
+              <p class="text-xs text-slate-500">Terjawab: <strong class="text-slate-800">${answeredCount}</strong> / ${total} soal</p>
+            </div>
+
+            <div class="flex items-center justify-between sm:justify-end gap-3">
+              <div id="examTimerBox" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-display font-bold text-base">
+                <i data-lucide="timer" class="w-5 h-5"></i>
+                <span id="examCountdownText">${formatSeconds(state.exam.remainingSeconds)}</span>
+              </div>
+
+              <button id="finishExamTopBtn" class="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer" type="button">
+                <i data-lucide="flag" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Selesai</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Exam Grid: Question Card + Question Navigator -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Left 8 Cols: Active Question Card -->
+            <div class="lg:col-span-8 bg-white rounded-2xl p-5 sm:p-7 border border-slate-200/80 shadow-xs space-y-6">
+              <div class="space-y-3">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  ${q.section} • Naskah Asli No. ${q.number}
+                </div>
+
+                ${
+                  q.infographic
+                    ? `
+                  <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200/80 text-sm text-slate-800 space-y-1">
+                    <div class="font-bold text-blue-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                      <i data-lucide="image" class="w-4 h-4 text-blue-600"></i>
+                      <span>Infografis & Literasi Pendukung</span>
+                    </div>
+                    <p class="leading-relaxed">${q.infographic}</p>
+                  </div>
+                `
+                    : ''
+                }
+
+                <h2 class="font-display font-semibold text-base sm:text-lg text-slate-900 leading-relaxed">
+                  ${q.prompt}
+                </h2>
+              </div>
+
+              <!-- Question Interactive Body by Type -->
+              <div id="questionBody" class="space-y-3">
+                ${renderQuestionInputBody(q, userAns, isSubmitted, evaluation)}
+              </div>
+
+              <!-- Submit Answer ("Jawab") & Step Navigation -->
+              <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <button id="prevQuestionBtn" ${idx === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none font-medium text-sm flex items-center gap-1.5 transition-colors cursor-pointer" type="button">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    <span>Sebelumnya</span>
+                  </button>
+
+                  <button id="nextQuestionBtn" ${idx === total - 1 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none font-medium text-sm flex items-center gap-1.5 transition-colors cursor-pointer" type="button">
+                    <span>Selanjutnya</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                  ${
+                    !isSubmitted
+                      ? `
+                    <button id="submitAnswerBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer" type="button">
+                      <i data-lucide="check" class="w-4 h-4"></i>
+                      <span>Jawab</span>
+                    </button>
+                  `
+                      : idx < total - 1
+                      ? `
+                    <button id="nextAfterSubmitBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer" type="button">
+                      <span>Soal Berikutnya</span>
+                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                  `
+                      : `
+                    <button id="finishFromLastBtn" class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer" type="button">
+                      <i data-lucide="check-circle" class="w-4 h-4"></i>
+                      <span>Selesai & Lihat Hasil</span>
+                    </button>
+                  `
+                  }
+                </div>
+              </div>
+
+              <!-- Instant Explanation Box (Only shown AFTER pressing "Jawab") -->
+              ${isSubmitted ? renderExplanationPanel(q, evaluation) : ''}
+            </div>
+
+            <!-- Right 4 Cols: Question Navigator Grid -->
+            <aside class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-display font-bold text-base text-slate-900">Navigasi Nomor Soal</h3>
+                <span class="text-xs font-semibold text-slate-500">${answeredCount}/${total} Dijawab</span>
+              </div>
+
+              <div class="grid grid-cols-6 sm:grid-cols-10 lg:grid-cols-5 gap-2">
+                ${sessionQs
+                  .map((item, qIdx) => {
+                    const isCurrent = qIdx === idx;
+                    const answered = hasAnsweredQuestion(item, state.exam.answers[item.id]);
+                    const sub = Boolean(state.exam.submitted[item.id]);
+                    const evItem = state.exam.evaluations[item.id];
+
+                    let btnClass = 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200';
+                    if (sub && evItem) {
+                      btnClass = evItem.isCorrect
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-400 font-bold'
+                        : 'bg-rose-100 text-rose-800 border-rose-400 font-bold';
+                    } else if (answered) {
+                      btnClass = 'bg-blue-100 text-blue-800 border-blue-300 font-semibold';
+                    }
+
+                    if (isCurrent) {
+                      btnClass += ' ring-2 ring-violet-600 ring-offset-1';
+                    }
+
+                    return `
+                      <button data-jump-index="${qIdx}" class="jump-q-btn h-10 rounded-xl border text-xs transition-all flex items-center justify-center cursor-pointer ${btnClass}" type="button">
+                        ${qIdx + 1}
+                      </button>
+                    `;
+                  })
+                  .join('')}
+              </div>
+
+              <!-- Legend -->
+              <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-blue-100 border border-blue-300 inline-block"></span>
+                  <span>Sudah Dijawab</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-slate-100 border border-slate-200 inline-block"></span>
+                  <span>Belum Dijawab</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-emerald-100 border border-emerald-400 inline-block"></span>
+                  <span>Terkoreksi Benar</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded bg-rose-100 border border-rose-400 inline-block"></span>
+                  <span>Terkoreksi Kurang Tepat</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuestionInputBody(q, userAns, isSubmitted, evaluation) {
+      const displayOpts = q.shuffledOptions || q.options || [];
+
+      if (q.type === 'PG') {
+        return displayOpts
+          .map((opt) => {
+            const selected = userAns === opt.key;
+            let cardStyle = 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 bg-white';
+            if (isSubmitted) {
+              if (opt.key === q.correctAnswer) {
+                cardStyle = 'border-emerald-500 bg-emerald-50/90 text-emerald-950';
+              } else if (selected && opt.key !== q.correctAnswer) {
+                cardStyle = 'border-rose-500 bg-rose-50/90 text-rose-950';
+              } else {
+                cardStyle = 'border-slate-200 bg-slate-50/60 opacity-75';
+              }
+            } else if (selected) {
+              cardStyle = 'border-blue-600 bg-blue-50/90 ring-1 ring-blue-600';
+            }
+
+            return `
+              <button data-pg-key="${opt.key}" ${isSubmitted ? 'disabled' : ''} class="pg-option-btn w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3.5 ${cardStyle} ${isSubmitted ? '' : 'cursor-pointer'}" type="button">
+                <span class="w-7 h-7 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 ${
+                  selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'
+                }">${opt.key}</span>
+                <span class="text-sm leading-relaxed flex-1">${opt.text}</span>
+              </button>
+            `;
+          })
+          .join('');
+      }
+
+      if (q.type === 'PGK') {
+        const selectedArr = Array.isArray(userAns) ? userAns : [];
+        const reqCount = q.selectCount || 2;
+        const correctArr = Array.isArray(q.correctAnswer) ? q.correctAnswer : [];
+
+        return `
+          <div class="flex items-center justify-between text-xs font-semibold px-3.5 py-2 rounded-xl bg-violet-50 text-violet-800 border border-violet-200">
+            <span>Pilih tepat ${reqCount} jawaban</span>
+            <span>Terpilih: ${selectedArr.length} / ${reqCount}</span>
+          </div>
+          ${displayOpts
+            .map((opt) => {
+              const checked = selectedArr.includes(opt.key);
+              const isRightOpt = correctArr.includes(opt.key);
+
+              let cardStyle = 'border-slate-200 hover:border-violet-300 hover:bg-violet-50/40 bg-white';
+              if (isSubmitted) {
+                if (isRightOpt) {
+                  cardStyle = 'border-emerald-500 bg-emerald-50/90 text-emerald-950';
+                } else if (checked && !isRightOpt) {
+                  cardStyle = 'border-rose-500 bg-rose-50/90 text-rose-950';
+                } else {
+                  cardStyle = 'border-slate-200 bg-slate-50/60 opacity-75';
+                }
+              } else if (checked) {
+                cardStyle = 'border-violet-600 bg-violet-50/90 ring-1 ring-violet-600';
+              }
+
+              return `
+                <button data-pgk-key="${opt.key}" ${isSubmitted ? 'disabled' : ''} class="pgk-option-btn w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3.5 ${cardStyle} ${isSubmitted ? '' : 'cursor-pointer'}" type="button">
+                  <span class="w-6 h-6 rounded-md border flex items-center justify-center shrink-0 mt-0.5 ${
+                    checked ? 'bg-violet-600 border-violet-600 text-white' : 'border-slate-300 bg-white text-transparent'
+                  }">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <span class="font-bold text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 mt-0.5">${opt.key}</span>
+                  <span class="text-sm leading-relaxed flex-1">${opt.text}</span>
+                </button>
+              `;
+            })
+            .join('')}
+        `;
+      }
+
+      if (q.type === 'BS') {
+        return `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            ${['BENAR', 'SALAH']
+              .map((val) => {
+                const selected = userAns === val;
+                let style = 'border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/50 text-slate-800';
+                if (isSubmitted) {
+                  if (q.correctAnswer === val) {
+                    style = 'border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-500';
+                  } else if (selected && q.correctAnswer !== val) {
+                    style = 'border-rose-500 bg-rose-50 text-rose-900 ring-1 ring-rose-500';
+                  } else {
+                    style = 'border-slate-200 bg-slate-50 opacity-70 text-slate-600';
+                  }
+                } else if (selected) {
+                  style = 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600';
+                }
+
+                return `
+                  <button data-bs-val="${val}" ${isSubmitted ? 'disabled' : ''} class="bs-option-btn p-4 rounded-2xl border font-display font-bold text-base transition-all flex items-center justify-center gap-2.5 ${style} ${isSubmitted ? '' : 'cursor-pointer'}" type="button">
+                    <i data-lucide="${val === 'BENAR' ? 'check-circle-2' : 'x-circle'}" class="w-5 h-5"></i>
+                    <span>${val}</span>
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
+        `;
+      }
+
+      if (q.type === 'JODOH') {
+        const currentMap = typeof userAns === 'object' && userAns !== null ? userAns : {};
+        const items = q.matchItems || [];
+        const matchChoices = q.options || [];
+
+        return `
+          <div class="space-y-4">
+            ${items
+              .map((it) => {
+                const chosenKey = currentMap[it.id] || '';
+                const expectedKey = q.correctAnswer ? q.correctAnswer[it.id] : '';
+                let rowBorder = 'border-slate-200 bg-slate-50/60';
+                if (isSubmitted) {
+                  rowBorder = chosenKey === expectedKey ? 'border-emerald-400 bg-emerald-50/70' : 'border-rose-400 bg-rose-50/70';
+                }
+
+                return `
+                  <div class="p-4 rounded-xl border ${rowBorder} space-y-2.5">
+                    <div class="font-semibold text-sm text-slate-900">${it.label}</div>
+                    <label class="block text-xs font-medium text-slate-500">Pilih pasangan yang paling sesuai (A–H):</label>
+                    <select data-match-item="${it.id}" ${isSubmitted ? 'disabled' : ''} class="match-select w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 focus:outline-none">
+                      <option value="">-- Pilih Pasangan Jawaban --</option>
+                      ${matchChoices
+                        .map(
+                          (opt) => `
+                        <option value="${opt.key}" ${chosenKey === opt.key ? 'selected' : ''}>
+                          ${opt.key}. ${opt.text}
+                        </option>
+                      `
+                        )
+                        .join('')}
+                    </select>
+                  </div>
+                `;
+              })
+              .join('')}
+          </div>
+        `;
+      }
+
+      if (q.type === 'ISIAN') {
+        return `
+          <div class="space-y-2">
+            <label for="isianInput" class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Jawaban Singkat Anda
+            </label>
+            <input
+              id="isianInput"
+              type="text"
+              ${isSubmitted ? 'disabled' : ''}
+              value="${userAns ? String(userAns).replace(/"/g, '&quot;') : ''}"
+              placeholder="Ketik kata atau frasa jawaban singkat di sini..."
+              class="w-full rounded-xl border ${
+                isSubmitted
+                  ? evaluation?.isCorrect
+                    ? 'border-emerald-500 bg-emerald-50/60 text-emerald-950'
+                    : 'border-rose-500 bg-rose-50/60 text-rose-950'
+                  : 'border-slate-300 bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
+              } px-4 py-3 text-sm font-medium focus:outline-none transition-all"
+            />
+          </div>
+        `;
+      }
+
+      if (q.type === 'URAIAN') {
+        const rubricMet = evaluation ? evaluation.rubricMet : true;
+        return `
+          <div class="space-y-3">
+            <label for="uraianTextarea" class="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Uraian Analisis Jawaban Anda
+            </label>
+            <textarea
+              id="uraianTextarea"
+              rows="5"
+              ${isSubmitted ? 'disabled' : ''}
+              placeholder="Tuliskan analisis, konsep, perbedaan/persamaan, atau contoh secara jelas dan terstruktur..."
+              class="w-full rounded-xl border border-slate-300 bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 p-4 text-sm leading-relaxed focus:outline-none transition-all"
+            >${userAns ? String(userAns) : ''}</textarea>
+
+            <div class="p-3.5 rounded-xl bg-violet-50/80 border border-violet-200/80 flex items-start gap-3">
+              <input
+                id="rubricMet_${q.id}"
+                type="checkbox"
+                ${isSubmitted ? 'disabled' : ''}
+                ${rubricMet ? 'checked' : ''}
+                class="mt-1 w-4 h-4 rounded text-violet-600 focus:ring-violet-500 cursor-pointer"
+              />
+              <label for="rubricMet_${q.id}" class="text-xs text-violet-950 leading-relaxed cursor-pointer">
+                <span class="font-bold">Evaluasi Mandiri Rubrik Uraian:</span> Centang jika jawaban Anda mencakup inti poin pembahasan & contoh sesuai kunci jawaban (dapat disesuaikan saat menekan "Jawab").
+              </label>
+            </div>
+          </div>
+        `;
+      }
+
+      return '';
+    }
+
+    function renderExplanationPanel(q, evaluation) {
+      const isRight = Boolean(evaluation && evaluation.isCorrect);
+      const boxColor = isRight
+        ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
+        : 'bg-rose-50/90 border-rose-300 text-rose-950';
+
+      const badgeColor = isRight
+        ? 'bg-emerald-600 text-white'
+        : 'bg-rose-600 text-white';
+
+      let formattedKey = '';
+      if (q.type === 'PG' || q.type === 'BS') {
+        formattedKey = String(q.correctAnswer);
+      } else if (q.type === 'PGK') {
+        formattedKey = Array.isArray(q.correctAnswer) ? q.correctAnswer.join(' & ') : String(q.correctAnswer);
+      } else if (q.type === 'JODOH') {
+        const entries = Object.entries(q.correctAnswer || {});
+        formattedKey = entries.map(([k, v]) => `${k.replace('item_', 'Soal ')} → ${v}`).join(', ');
+      } else {
+        formattedKey = String(q.correctAnswer || '');
+      }
+
+      return `
+        <div class="rounded-2xl border p-5 space-y-3 animate-fade-in ${boxColor}">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${badgeColor}">
+              <i data-lucide="${isRight ? 'check-circle-2' : 'alert-circle'}" class="w-3.5 h-3.5"></i>
+              <span>${evaluation ? evaluation.statusText : 'Pembahasan'}</span>
+            </span>
+            <span class="text-xs font-bold">Kunci Jawaban: ${formattedKey}</span>
+          </div>
+
+          <div class="space-y-1">
+            <div class="text-xs font-bold uppercase tracking-wider opacity-75">Pembahasan Lengkap</div>
+            <p class="text-sm leading-relaxed">${q.explanation}</p>
+          </div>
+
+          ${
+            Array.isArray(q.rubricPoints) && q.rubricPoints.length > 0
+              ? `
+            <div class="pt-2 border-t border-black/10 space-y-1">
+              <div class="text-xs font-bold uppercase tracking-wider opacity-75">Poin Penilaian Rubrik</div>
+              <ul class="list-disc list-inside text-xs space-y-1">
+                ${q.rubricPoints.map((pt) => `<li>${pt}</li>`).join('')}
+              </ul>
+            </div>
+          `
+              : ''
+          }
+        </div>
+      `;
+    }
+
+    function bindExamEvents() {
+      const emptyStart = document.getElementById('emptyExamStartBtn');
+      if (emptyStart) {
+        emptyStart.addEventListener('click', () => startNewExamSession());
+        return;
+      }
+
+      const q = state.exam.sessionQuestions[state.exam.currentIndex];
+      if (!q) return;
+
+      // PG selection
+      document.querySelectorAll('.pg-option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (state.exam.submitted[q.id]) return;
+          state.exam.answers[q.id] = btn.dataset.pgKey;
+          renderApp();
+        });
+      });
+
+      // PGK selection (toggle up to selectCount)
+      document.querySelectorAll('.pgk-option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (state.exam.submitted[q.id]) return;
+          const key = btn.dataset.pgkKey;
+          const maxSelect = q.selectCount || 2;
+          let current = Array.isArray(state.exam.answers[q.id]) ? [...state.exam.answers[q.id]] : [];
+
+          if (current.includes(key)) {
+            current = current.filter((item) => item !== key);
+          } else {
+            if (current.length >= maxSelect) {
+              showToast(`Maksimal ${maxSelect} pilihan untuk soal ini. Lepaskan salah satu pilihan terlebih dahulu.`, 'warning');
+              return;
+            }
+            current.push(key);
+          }
+
+          state.exam.answers[q.id] = current;
+          renderApp();
+        });
+      });
+
+      // Benar / Salah selection
+      document.querySelectorAll('.bs-option-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (state.exam.submitted[q.id]) return;
+          state.exam.answers[q.id] = btn.dataset.bsVal;
+          renderApp();
+        });
+      });
+
+      // Menjodohkan selects
+      document.querySelectorAll('.match-select').forEach((sel) => {
+        sel.addEventListener('change', () => {
+          if (state.exam.submitted[q.id]) return;
+          const itemId = sel.dataset.matchItem;
+          const prevObj = typeof state.exam.answers[q.id] === 'object' && state.exam.answers[q.id] !== null
+            ? { ...state.exam.answers[q.id] }
+            : {};
+          prevObj[itemId] = sel.value;
+          state.exam.answers[q.id] = prevObj;
+        });
+      });
+
+      // Isian Singkat input
+      const isianEl = document.getElementById('isianInput');
+      if (isianEl) {
+        isianEl.addEventListener('input', (e) => {
+          state.exam.answers[q.id] = e.target.value;
+        });
+      }
+
+      // Uraian textarea
+      const uraianEl = document.getElementById('uraianTextarea');
+      if (uraianEl) {
+        uraianEl.addEventListener('input', (e) => {
+          state.exam.answers[q.id] = e.target.value;
+        });
+      }
+
+      // Prev / Next buttons
+      const prevBtn = document.getElementById('prevQuestionBtn');
+      const nextBtn = document.getElementById('nextQuestionBtn');
+      const nextAfterSubmitBtn = document.getElementById('nextAfterSubmitBtn');
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (state.exam.currentIndex > 0) {
+            state.exam.currentIndex -= 1;
+            renderApp();
+          }
+        });
+      }
+
+      const goNext = () => {
+        if (state.exam.currentIndex < state.exam.sessionQuestions.length - 1) {
+          state.exam.currentIndex += 1;
+          renderApp();
+        }
+      };
+
+      if (nextBtn) nextBtn.addEventListener('click', goNext);
+      if (nextAfterSubmitBtn) nextAfterSubmitBtn.addEventListener('click', goNext);
+
+      // Submit Answer ("Jawab")
+      const submitBtn = document.getElementById('submitAnswerBtn');
+      if (submitBtn) {
+        submitBtn.addEventListener('click', submitCurrentQuestion);
+      }
+
+      // Finish exam triggers
+      const finishTop = document.getElementById('finishExamTopBtn');
+      const finishLast = document.getElementById('finishFromLastBtn');
+      if (finishTop) finishTop.addEventListener('click', confirmFinishExam);
+      if (finishLast) finishLast.addEventListener('click', confirmFinishExam);
+
+      // Navigator jump buttons
+      document.querySelectorAll('.jump-q-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetIdx = Number(btn.dataset.jumpIndex);
+          if (!Number.isNaN(targetIdx)) {
+            state.exam.currentIndex = targetIdx;
+            renderApp();
+          }
+        });
+      });
+    }
+
+    // --- 7C. RESULTS & SCORE VIEW ---
+    function renderResultsView() {
+      const res = state.latestResult;
+      if (!res) {
+        return `
+          <div class="bg-white rounded-2xl p-8 border border-slate-200 text-center max-w-lg mx-auto space-y-4 animate-fade-in">
+            <h2 class="font-display font-bold text-xl text-slate-900">Belum Ada Hasil Ujian</h2>
+            <p class="text-sm text-slate-600">Selesaikan sesi ujian terlebih dahulu untuk melihat skor dan analisis hasil.</p>
+            <button id="goHomeFromEmptyResBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm cursor-pointer" type="button">
+              Kembali ke Beranda
+            </button>
+          </div>
+        `;
+      }
+
+      const stats = getStatsFromHistory();
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <!-- Main Score Banner -->
+          <section class="rounded-3xl bg-white border border-slate-200/80 shadow-xs p-6 sm:p-8">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${
+                  res.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                }">
+                  <i data-lucide="${res.passed ? 'award' : 'alert-triangle'}" class="w-4 h-4"></i>
+                  <span>${res.passed ? 'LULUS (Memenuhi Batas Kelulusan)' : 'BELUM LULUS (Di Bawah Batas Kelulusan)'}</span>
+                </div>
+                <h1 class="font-display font-bold text-2xl sm:text-3xl text-slate-900">
+                  Hasil Ujian: ${res.examTitle}
+                </h1>
+                <p class="text-sm text-slate-500">
+                  Rumus Nilai: <code class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-semibold">(Jumlah Jawaban Benar / Total Soal) × 100</code> • Batas Kelulusan: <strong>${res.passingGrade}</strong>
+                  ${res.autoByTimeout ? ' • <span class="text-rose-600 font-semibold">Diselesaikan otomatis karena waktu habis</span>' : ''}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-5 bg-gradient-to-br from-blue-600 to-violet-600 text-white px-6 py-5 rounded-2xl shadow-md shrink-0">
+                <div>
+                  <div class="text-xs uppercase tracking-wider text-blue-100 font-semibold">Nilai Akhir</div>
+                  <div class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">${res.score}</div>
+                </div>
+                <div class="h-12 w-px bg-white/25"></div>
+                <div class="text-xs space-y-1">
+                  <div>Keberhasilan: <strong>${res.successRate}%</strong></div>
+                  <div>Waktu: <strong>${formatDurationHuman(res.timeUsedSeconds)}</strong></div>
+                  <div>Nilai Terbaik: <strong>${stats.best}</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
+              <button id="retryExamBtn" class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer" type="button">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                <span>Coba Lagi (Acak Ulang Soal)</span>
+              </button>
+
+              <button id="viewHistoryFromResBtn" class="px-5 py-3 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 font-semibold text-sm border border-violet-200 flex items-center gap-2 transition-all cursor-pointer" type="button">
+                <i data-lucide="history" class="w-4 h-4"></i>
+                <span>Lihat Riwayat & Grafik Perkembangan</span>
+              </button>
+
+              <button id="backHomeFromResBtn" class="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer" type="button">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>Beranda</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Metric Cards -->
+          <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-emerald-700 uppercase">Jawaban Benar</div>
+              <div class="font-display font-bold text-3xl text-emerald-600 mt-1">${res.correctCount}</div>
+              <div class="text-xs text-slate-500 mt-1">dari ${res.totalQuestions} soal</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-rose-700 uppercase">Jawaban Salah</div>
+              <div class="font-display font-bold text-3xl text-rose-600 mt-1">${res.wrongCount}</div>
+              <div class="text-xs text-slate-500 mt-1">perlu evaluasi</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-slate-600 uppercase">Belum Dijawab</div>
+              <div class="font-display font-bold text-3xl text-slate-800 mt-1">${res.unansweredCount}</div>
+              <div class="text-xs text-slate-500 mt-1">tidak terisi</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-violet-700 uppercase">Rata-Rata Riwayat</div>
+              <div class="font-display font-bold text-3xl text-violet-600 mt-1">${stats.average}</div>
+              <div class="text-xs text-slate-500 mt-1">dari ${stats.count} percobaan</div>
+            </div>
+          </section>
+
+          <!-- Chart + Itemized Review -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900">Visualisasi Komposisi Soal</h2>
+              <div class="h-64 flex items-center justify-center">
+                <canvas id="resultsBreakdownChart"></canvas>
+              </div>
+            </div>
+
+            <div class="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900">Rekapitulasi & Pembahasan Per Soal</h2>
+              <div class="space-y-3 max-h-[560px] overflow-y-auto pr-1">
+                ${(res.details || [])
+                  .map((item) => {
+                    const badge = !item.isAnswered
+                      ? 'bg-slate-100 text-slate-700'
+                      : item.isCorrect
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-rose-100 text-rose-800';
+
+                    return `
+                      <div class="p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 space-y-2">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                          <span class="text-xs font-bold text-slate-700">
+                            Urutan #${item.order} (Soal Asli No. ${item.question.number}) • ${item.question.typeLabel}
+                          </span>
+                          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">
+                            ${item.statusText}
+                          </span>
+                        </div>
+                        <p class="text-sm font-medium text-slate-900">${item.question.prompt}</p>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                          <strong class="text-slate-800">Pembahasan:</strong> ${item.question.explanation}
+                        </p>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderResultsChart() {
+      const canvas = document.getElementById('resultsBreakdownChart');
+      const res = state.latestResult;
+      if (!canvas || !res || typeof Chart === 'undefined') return;
+
+      if (breakdownChartInstance) {
+        breakdownChartInstance.destroy();
+      }
+
+      breakdownChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Jawaban Benar', 'Jawaban Salah', 'Belum Dijawab'],
+          datasets: [
+            {
+              data: [res.correctCount, res.wrongCount, res.unansweredCount],
+              backgroundColor: ['#10b981', '#f43f5e', '#94a3b8'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: { family: 'Inter', size: 12 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function bindResultsEvents() {
+      const goHome = document.getElementById('goHomeFromEmptyResBtn');
+      if (goHome) goHome.addEventListener('click', () => navigateTo('home'));
+
+      const retryBtn = document.getElementById('retryExamBtn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => startNewExamSession(state.config.durationMinutes));
+      }
+
+      const histBtn = document.getElementById('viewHistoryFromResBtn');
+      if (histBtn) {
+        histBtn.addEventListener('click', () => navigateTo('history'));
+      }
+
+      const homeBtn = document.getElementById('backHomeFromResBtn');
+      if (homeBtn) {
+        homeBtn.addEventListener('click', () => navigateTo('home'));
+      }
+    }
+
+    // --- 7D. HISTORY DASHBOARD VIEW ---
+    function renderHistoryView() {
+      const stats = getStatsFromHistory();
+      const items = state.history || [];
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="font-display font-bold text-2xl text-slate-900">Dashboard Riwayat Ujian</h1>
+              <p class="text-sm text-slate-500">Pantau perkembangan nilai, waktu pengerjaan, dan status kelulusan tiap percobaan</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button id="historyStartExamBtn" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                <span>Mulai Percobaan Baru</span>
+              </button>
+              ${
+                items.length > 0
+                  ? `
+                <button id="clearHistoryBtn" class="px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  <span>Hapus Riwayat</span>
+                </button>
+              `
+                  : ''
+              }
+            </div>
+          </div>
+
+          <!-- Top Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-slate-500 uppercase">Total Percobaan</div>
+              <div class="font-display font-bold text-3xl text-slate-900 mt-1">${stats.count}x</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-blue-600 uppercase">Nilai Tertinggi</div>
+              <div class="font-display font-bold text-3xl text-blue-700 mt-1">${stats.count > 0 ? stats.best : '—'}</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div class="text-xs font-semibold text-violet-600 uppercase">Rata-Rata Nilai</div>
+              <div class="font-display font-bold text-3xl text-violet-700 mt-1">${stats.count > 0 ? stats.average : '—'}</div>
+            </div>
+          </div>
+
+          <!-- Score Progression Chart -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <h2 class="font-display font-bold text-lg text-slate-900">Grafik Perkembangan Nilai</h2>
+            ${
+              items.length > 0
+                ? `<div class="h-72"><canvas id="historyProgressionChart"></canvas></div>`
+                : `<div class="py-12 text-center text-sm text-slate-500">Belum ada data percobaan ujian untuk ditampilkan pada grafik.</div>`
+            }
+          </div>
+
+          <!-- Attempts Table -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100">
+              <h2 class="font-display font-bold text-lg text-slate-900">Daftar Percobaan Ujian</h2>
+            </div>
+
+            ${
+              items.length === 0
+                ? `
+              <div class="p-10 text-center text-sm text-slate-500">
+                Belum ada riwayat ujian tersimpan. Klik <strong>Mulai Percobaan Baru</strong> untuk mengerjakan ujian.
+              </div>
+            `
+                : `
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                      <th class="py-3.5 px-4">Percobaan</th>
+                      <th class="py-3.5 px-4">Tanggal & Waktu</th>
+                      <th class="py-3.5 px-4">Benar / Total</th>
+                      <th class="py-3.5 px-4">Waktu Digunakan</th>
+                      <th class="py-3.5 px-4">Nilai</th>
+                      <th class="py-3.5 px-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    ${items
+                      .map((att, idx) => {
+                        const attemptNum = items.length - idx;
+                        const dt = new Date(att.date).toLocaleString('id-ID', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short'
+                        });
+                        return `
+                          <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-3.5 px-4 font-bold text-slate-800">#${attemptNum}</td>
+                            <td class="py-3.5 px-4 text-slate-600">${dt}</td>
+                            <td class="py-3.5 px-4 text-slate-700">${att.correctCount} / ${att.totalQuestions} (${att.successRate}%)</td>
+                            <td class="py-3.5 px-4 text-slate-600">${formatDurationHuman(att.timeUsedSeconds)}</td>
+                            <td class="py-3.5 px-4 font-display font-bold text-base text-blue-700">${att.score}</td>
+                            <td class="py-3.5 px-4">
+                              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${
+                                att.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                              }">
+                                ${att.passed ? 'Lulus' : 'Tidak Lulus'}
+                              </span>
+                            </td>
+                          </tr>
+                        `;
+                      })
+                      .join('')}
+                  </tbody>
+                </table>
+              </div>
+            `
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHistoryChart() {
+      const canvas = document.getElementById('historyProgressionChart');
+      if (!canvas || !state.history || state.history.length === 0 || typeof Chart === 'undefined') return;
+
+      if (historyChartInstance) {
+        historyChartInstance.destroy();
+      }
+
+      const chronological = [...state.history].reverse();
+      const labels = chronological.map((_, i) => `Percobaan #${i + 1}`);
+      const scores = chronological.map((a) => Number(a.score));
+
+      historyChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Nilai Ujian (0–100)',
+              data: scores,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.12)',
+              pointBackgroundColor: '#7c3aed',
+              pointBorderColor: '#ffffff',
+              pointRadius: 5,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20 }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { font: { family: 'Inter', size: 12 } }
+            }
+          }
+        }
+      });
+    }
+
+    function bindHistoryEvents() {
+      const startBtn = document.getElementById('historyStartExamBtn');
+      if (startBtn) startBtn.addEventListener('click', () => startNewExamSession());
+
+      const clearBtn = document.getElementById('clearHistoryBtn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+          const ok = await openConfirmModal({
+            title: 'Hapus Semua Riwayat Ujian?',
+            message: 'Seluruh catatan percobaan ujian dan grafik perkembangan nilai akan dihapus permanen.',
+            confirmText: 'Ya, Hapus Riwayat',
+            cancelText: 'Batal',
+            danger: true
+          });
+          if (ok) {
+            state.history = [];
+            saveJSON(STORAGE_KEYS.HISTORY, []);
+            renderApp();
+            showToast('Riwayat ujian berhasil dihapus.', 'info');
+          }
+        });
+      }
+    }
+
+    // --- 7E. ADMIN PANEL VIEW ---
+    function renderAdminView() {
+      const cfg = state.config;
+      const editingQ = state.admin.editingId
+        ? state.questions.find((item) => item.id === state.admin.editingId)
+        : null;
+
+      const filteredQs = state.questions.filter((q) => {
+        const matchesType = state.admin.filterType === 'ALL' || q.type === state.admin.filterType;
+        const query = state.admin.searchQuery.trim().toLowerCase();
+        const matchesQuery =
+          !query ||
+          q.prompt.toLowerCase().includes(query) ||
+          q.topic.toLowerCase().includes(query) ||
+          String(q.number).includes(query);
+        return matchesType && matchesQuery;
+      });
+
+      const formType = editingQ ? editingQ.type : 'PG';
+
+      return `
+        <div class="space-y-6 animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="font-display font-bold text-2xl text-slate-900">Admin Panel – Manajemen Soal & Pengaturan</h1>
+              <p class="text-sm text-slate-500">Kelola bank soal (30 soal ASAS Sosiologi), durasi, batas kelulusan, dan kategori ujian</p>
+            </div>
+            <button id="resetDefaultAsasBtn" class="px-4 py-2.5 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 font-semibold text-sm flex items-center gap-2 cursor-pointer" type="button">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Reset Default Soal ASAS (30 Soal)</span>
+            </button>
+          </div>
+
+          <!-- Exam Settings & Categories Card -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
+                <span>Pengaturan Ujian & Kelulusan</span>
+              </h2>
+
+              <form id="examSettingsForm" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Ujian</label>
+                  <input id="cfgTitleInput" type="text" value="${cfg.title.replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Durasi Ujian (Menit)</label>
+                    <input id="cfgDurationInput" type="number" min="1" max="300" value="${cfg.durationMinutes}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Batas Nilai Kelulusan (0–100)</label>
+                    <input id="cfgPassingInput" type="number" min="0" max="100" value="${cfg.passingGrade}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                  </div>
+                </div>
+
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <span>Simpan Pengaturan Ujian</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Categories Manager -->
+            <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                <i data-lucide="folder-tree" class="w-5 h-5 text-violet-600"></i>
+                <span>Kelola Kategori Ujian</span>
+              </h2>
+
+              <div class="flex gap-2">
+                <input id="newCategoryInput" type="text" placeholder="Nama kategori baru..." class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-violet-600 focus:outline-none" />
+                <button id="addCategoryBtn" class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm cursor-pointer" type="button">
+                  Tambah
+                </button>
+              </div>
+
+              <div class="flex flex-wrap gap-2 pt-1">
+                ${cfg.categories
+                  .map(
+                    (cat, cIdx) => `
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                    <span>${cat}</span>
+                    <button data-del-cat="${cIdx}" class="del-cat-btn text-rose-500 hover:text-rose-700 cursor-pointer" title="Hapus kategori" type="button">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </span>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          </section>
+
+          <!-- Add / Edit Question Form -->
+          <section id="questionEditorSection" class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <h2 class="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
+                <i data-lucide="${editingQ ? 'edit-3' : 'plus-circle'}" class="w-5 h-5 text-blue-600"></i>
+                <span>${editingQ ? `Edit Soal (No. ${editingQ.number})` : 'Tambah Soal Baru'}</span>
+              </h2>
+              ${
+                editingQ
+                  ? `
+                <button id="cancelEditQuestionBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer" type="button">
+                  Batal Edit
+                </button>
+              `
+                  : ''
+              }
+            </div>
+
+            <form id="questionForm" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Bentuk Soal</label>
+                  <select id="qTypeSelect" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:border-blue-600 focus:outline-none">
+                    <option value="PG" ${formType === 'PG' ? 'selected' : ''}>Pilihan Ganda (PG)</option>
+                    <option value="PGK" ${formType === 'PGK' ? 'selected' : ''}>Pilihan Ganda Kompleks (PGK)</option>
+                    <option value="BS" ${formType === 'BS' ? 'selected' : ''}>Benar–Salah (BS)</option>
+                    <option value="JODOH" ${formType === 'JODOH' ? 'selected' : ''}>Menjodohkan (JODOH)</option>
+                    <option value="ISIAN" ${formType === 'ISIAN' ? 'selected' : ''}>Isian Singkat (ISIAN)</option>
+                    <option value="URAIAN" ${formType === 'URAIAN' ? 'selected' : ''}>Uraian Panjang (URAIAN)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori Materi</label>
+                  <select id="qCategorySelect" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:border-blue-600 focus:outline-none">
+                    ${cfg.categories
+                      .map(
+                        (cat) => `
+                      <option value="${cat}" ${(editingQ?.category || cfg.categories[0]) === cat ? 'selected' : ''}>${cat}</option>
+                    `
+                      )
+                      .join('')}
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Topik / Indikator</label>
+                  <input id="qTopicInput" type="text" value="${(editingQ?.topic || 'Perubahan Sosial').replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none" required />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pertanyaan / Narasi Soal</label>
+                <textarea id="qPromptInput" rows="3" class="w-full rounded-xl border border-slate-300 p-3.5 text-sm focus:border-blue-600 focus:outline-none" required>${editingQ ? editingQ.prompt : ''}</textarea>
+              </div>
+
+              <!-- Dynamic Options & Answer Key Area -->
+              <div id="adminDynamicFields" class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                ${renderAdminDynamicFields(formType, editingQ)}
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pembahasan Lengkap</label>
+                <textarea id="qExplanationInput" rows="3" class="w-full rounded-xl border border-slate-300 p-3.5 text-sm focus:border-blue-600 focus:outline-none" required>${editingQ ? editingQ.explanation : ''}</textarea>
+              </div>
+
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>${editingQ ? 'Perbarui Soal' : 'Simpan Soal Baru'}</span>
+              </button>
+            </form>
+          </section>
+
+          <!-- Question Bank Table -->
+          <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 class="font-display font-bold text-lg text-slate-900">Bank Soal (${filteredQs.length} / ${state.questions.length} Soal)</h2>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <select id="adminFilterType" class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold bg-white">
+                  <option value="ALL" ${state.admin.filterType === 'ALL' ? 'selected' : ''}>Semua Bentuk</option>
+                  <option value="PG" ${state.admin.filterType === 'PG' ? 'selected' : ''}>PG</option>
+                  <option value="PGK" ${state.admin.filterType === 'PGK' ? 'selected' : ''}>PGK</option>
+                  <option value="BS" ${state.admin.filterType === 'BS' ? 'selected' : ''}>Benar–Salah</option>
+                  <option value="JODOH" ${state.admin.filterType === 'JODOH' ? 'selected' : ''}>Menjodohkan</option>
+                  <option value="ISIAN" ${state.admin.filterType === 'ISIAN' ? 'selected' : ''}>Isian Singkat</option>
+                  <option value="URAIAN" ${state.admin.filterType === 'URAIAN' ? 'selected' : ''}>Uraian</option>
+                </select>
+                <input id="adminSearchInput" type="text" value="${state.admin.searchQuery.replace(/"/g, '&quot;')}" placeholder="Cari soal atau topik..." class="rounded-xl border border-slate-300 px-3 py-2 text-xs w-48 sm:w-56" />
+              </div>
+            </div>
+
+            <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+              ${filteredQs
+                .map(
+                  (q) => `
+                <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4 hover:bg-slate-50/70">
+                  <div class="space-y-1.5 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-800">No. ${q.number}</span>
+                      <span class="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-violet-100 text-violet-800">${q.typeLabel}</span>
+                      <span class="text-xs text-slate-500">${q.topic}</span>
+                    </div>
+                    <p class="text-sm font-medium text-slate-900 leading-relaxed">${q.prompt}</p>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button data-edit-id="${q.id}" class="edit-q-btn px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold flex items-center gap-1 cursor-pointer" type="button">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      <span>Edit</span>
+                    </button>
+                    <button data-del-id="${q.id}" class="del-q-btn px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-1 cursor-pointer" type="button">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      <span>Hapus</span>
+                    </button>
+                  </div>
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderAdminDynamicFields(type, editingQ) {
+      if (type === 'PG' || type === 'PGK') {
+        const opts = editingQ?.options || [
+          { key: 'A', text: '' },
+          { key: 'B', text: '' },
+          { key: 'C', text: '' },
+          { key: 'D', text: '' }
+        ];
+        const getOptText = (k) => opts.find((o) => o.key === k)?.text || '';
+
+        if (type === 'PG') {
+          const corr = editingQ?.correctAnswer || 'A';
+          return `
+            <div class="text-xs font-bold uppercase text-slate-600">Pilihan Jawaban (A–D) & Kunci Jawaban</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ${['A', 'B', 'C', 'D']
+                .map(
+                  (k) => `
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Opsi ${k}</label>
+                  <input id="opt_${k}" type="text" value="${getOptText(k).replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" required />
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Jawaban Benar</label>
+              <select id="pgCorrectSelect" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold">
+                ${['A', 'B', 'C', 'D'].map((k) => `<option value="${k}" ${corr === k ? 'selected' : ''}>Pilihan ${k}</option>`).join('')}
+              </select>
+            </div>
+          `;
+        }
+
+        const corrArr = Array.isArray(editingQ?.correctAnswer) ? editingQ.correctAnswer : ['A', 'B'];
+        return `
+          <div class="text-xs font-bold uppercase text-slate-600">Pilihan Ganda Kompleks (Pilih 2 Jawaban Benar)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${['A', 'B', 'C', 'D']
+              .map(
+                (k) => `
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Opsi ${k}</label>
+                <input id="opt_${k}" type="text" value="${getOptText(k).replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" required />
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+          <div class="flex flex-wrap items-center gap-4 pt-1">
+            <span class="text-xs font-semibold text-slate-700">Kunci Jawaban (Pilih 2):</span>
+            ${['A', 'B', 'C', 'D']
+              .map(
+                (k) => `
+              <label class="inline-flex items-center gap-1.5 text-sm font-medium cursor-pointer">
+                <input type="checkbox" class="pgk-correct-chk rounded text-violet-600" value="${k}" ${corrArr.includes(k) ? 'checked' : ''} />
+                <span>${k}</span>
+              </label>
+            `
+              )
+              .join('')}
+          </div>
+        `;
+      }
+
+      if (type === 'BS') {
+        const corr = editingQ?.correctAnswer || 'BENAR';
+        return `
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kunci Jawaban Benar / Salah</label>
+            <select id="bsCorrectSelect" class="rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold">
+              <option value="BENAR" ${corr === 'BENAR' ? 'selected' : ''}>BENAR</option>
+              <option value="SALAH" ${corr === 'SALAH' ? 'selected' : ''}>SALAH</option>
+            </select>
+          </div>
+        `;
+      }
+
+      if (type === 'ISIAN') {
+        const kwStr = Array.isArray(editingQ?.acceptedKeywords)
+          ? editingQ.acceptedKeywords.join(', ')
+          : '';
+        return `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Kunci Jawaban Utama</label>
+              <input id="isianKeyInput" type="text" value="${String(editingQ?.correctAnswer || '').replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" required />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Kata Kunci Diterima (Pisahkan dengan koma)</label>
+              <input id="isianKeywordsInput" type="text" value="${kwStr.replace(/"/g, '&quot;')}" placeholder="contoh: evolusi, unilinear" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" />
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Ringkasan Kunci / Rubrik Jawaban Acuan</label>
+          <textarea id="uraianKeyInput" rows="2" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm" required>${editingQ?.correctAnswer || ''}</textarea>
+        </div>
+      `;
+    }
+
+    function bindAdminEvents() {
+      // Reset to default 30 ASAS questions
+      const resetBtn = document.getElementById('resetDefaultAsasBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', async () => {
+          const ok = await openConfirmModal({
+            title: 'Reset Bank Soal ke Default ASAS?',
+            message: 'Seluruh perubahan soal akan dikembalikan ke 30 soal asli ASAS Sosiologi Kelas XII Ganjil.',
+            confirmText: 'Ya, Reset Soal',
+            cancelText: 'Batal',
+            danger: false
+          });
+          if (ok) {
+            state.questions = structuredClone(DEFAULT_QUESTIONS);
+            state.config = structuredClone(DEFAULT_EXAM_CONFIG);
+            state.admin.editingId = null;
+            saveJSON(STORAGE_KEYS.QUESTIONS, state.questions);
+            saveJSON(STORAGE_KEYS.CONFIG, state.config);
+            renderApp();
+            showToast('Bank soal berhasil direset ke 30 soal ASAS Sosiologi.', 'success');
+          }
+        });
+      }
+
+      // Settings form
+      const cfgForm = document.getElementById('examSettingsForm');
+      if (cfgForm) {
+        cfgForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const titleVal = document.getElementById('cfgTitleInput').value.trim();
+          const durVal = Number(document.getElementById('cfgDurationInput').value);
+          const passVal = Number(document.getElementById('cfgPassingInput').value);
+
+          if (!titleVal || durVal < 1 || passVal < 0 || passVal > 100) {
+            showToast('Periksa kembali judul, durasi (menit), dan batas kelulusan (0–100).', 'warning');
+            return;
+          }
+
+          state.config.title = titleVal;
+          state.config.durationMinutes = durVal;
+          state.config.passingGrade = passVal;
+          saveJSON(STORAGE_KEYS.CONFIG, state.config);
+          showToast('Pengaturan ujian berhasil disimpan.', 'success');
+        });
+      }
+
+      // Add / Delete Category
+      const addCatBtn = document.getElementById('addCategoryBtn');
+      const newCatInput = document.getElementById('newCategoryInput');
+      if (addCatBtn && newCatInput) {
+        addCatBtn.addEventListener('click', () => {
+          const name = newCatInput.value.trim();
+          if (!name) {
+            showToast('Masukkan nama kategori terlebih dahulu.', 'warning');
+            return;
+          }
+          if (!state.config.categories.includes(name)) {
+            state.config.categories.push(name);
+            saveJSON(STORAGE_KEYS.CONFIG, state.config);
+            renderApp();
+            showToast(`Kategori "${name}" ditambahkan.`, 'success');
+          }
+        });
+      }
+
+      document.querySelectorAll('.del-cat-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const cIdx = Number(btn.dataset.delCat);
+          if (state.config.categories.length <= 1) {
+            showToast('Minimal harus ada 1 kategori ujian.', 'warning');
+            return;
+          }
+          state.config.categories.splice(cIdx, 1);
+          saveJSON(STORAGE_KEYS.CONFIG, state.config);
+          renderApp();
+          showToast('Kategori dihapus.', 'info');
+        });
+      });
+
+      // Dynamic form type switch
+      const qTypeSelect = document.getElementById('qTypeSelect');
+      if (qTypeSelect) {
+        qTypeSelect.addEventListener('change', (e) => {
+          const dynBox = document.getElementById('adminDynamicFields');
+          const editingQ = state.admin.editingId
+            ? state.questions.find((item) => item.id === state.admin.editingId)
+            : null;
+          if (dynBox) {
+            dynBox.innerHTML = renderAdminDynamicFields(e.target.value, editingQ);
+            lucide.createIcons({ nodes: [dynBox] });
+          }
+        });
+      }
+
+      // Cancel edit
+      const cancelEditBtn = document.getElementById('cancelEditQuestionBtn');
+      if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => {
+          state.admin.editingId = null;
+          renderApp();
+        });
+      }
+
+      // Save / Update Question
+      const qForm = document.getElementById('questionForm');
+      if (qForm) {
+        qForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const type = document.getElementById('qTypeSelect').value;
+          const category = document.getElementById('qCategorySelect').value;
+          const topic = document.getElementById('qTopicInput').value.trim();
+          const prompt = document.getElementById('qPromptInput').value.trim();
+          const explanation = document.getElementById('qExplanationInput').value.trim();
+
+          const typeLabelMap = {
+            PG: 'Pilihan Ganda',
+            PGK: 'Pilihan Ganda Kompleks (Pilih 2)',
+            BS: 'Benar–Salah',
+            JODOH: 'Menjodohkan',
+            ISIAN: 'Isian Singkat',
+            URAIAN: 'Uraian Panjang'
+          };
+
+          const baseData = {
+            type,
+            typeLabel: typeLabelMap[type] || type,
+            category,
+            topic,
+            prompt,
+            explanation
+          };
+
+          if (type === 'PG') {
+            baseData.options = ['A', 'B', 'C', 'D'].map((k) => ({
+              key: k,
+              text: document.getElementById(`opt_${k}`).value.trim()
+            }));
+            baseData.correctAnswer = document.getElementById('pgCorrectSelect').value;
+          } else if (type === 'PGK') {
+            baseData.options = ['A', 'B', 'C', 'D'].map((k) => ({
+              key: k,
+              text: document.getElementById(`opt_${k}`).value.trim()
+            }));
+            const checkedKeys = Array.from(document.querySelectorAll('.pgk-correct-chk:checked')).map((c) => c.value);
+            if (checkedKeys.length !== 2) {
+              showToast('Pilih tepat 2 kunci jawaban untuk soal Pilihan Ganda Kompleks.', 'warning');
+              return;
+            }
+            baseData.selectCount = 2;
+            baseData.correctAnswer = checkedKeys;
+          } else if (type === 'BS') {
+            baseData.options = [
+              { key: 'BENAR', text: 'BENAR' },
+              { key: 'SALAH', text: 'SALAH' }
+            ];
+            baseData.correctAnswer = document.getElementById('bsCorrectSelect').value;
+          } else if (type === 'ISIAN') {
+            const mainKey = document.getElementById('isianKeyInput').value.trim();
+            const rawKw = document.getElementById('isianKeywordsInput').value.trim();
+            const kwList = rawKw
+              ? rawKw.split(',').map((s) => s.trim()).filter(Boolean)
+              : [mainKey.toLowerCase()];
+            baseData.correctAnswer = mainKey;
+            baseData.acceptedKeywords = kwList;
+          } else if (type === 'URAIAN') {
+            baseData.correctAnswer = document.getElementById('uraianKeyInput').value.trim();
+          }
+
+          if (state.admin.editingId) {
+            state.questions = state.questions.map((item) =>
+              item.id === state.admin.editingId ? { ...item, ...baseData } : item
+            );
+            state.admin.editingId = null;
+            showToast('Soal berhasil diperbarui.', 'success');
+          } else {
+            const nextNum = state.questions.length + 1;
+            const newQ = {
+              id: Date.now(),
+              number: nextNum,
+              section: `Bagian Tambahan • ${baseData.typeLabel}`,
+              ...baseData
+            };
+            state.questions.push(newQ);
+            showToast(`Soal baru (#${nextNum}) berhasil ditambahkan ke bank soal.`, 'success');
+          }
+
+          saveJSON(STORAGE_KEYS.QUESTIONS, state.questions);
+          renderApp();
+        });
+      }
+
+      // Edit & Delete question actions
+      document.querySelectorAll('.edit-q-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.admin.editingId = Number(btn.dataset.editId);
+          renderApp();
+          document.getElementById('questionEditorSection')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      document.querySelectorAll('.del-q-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const qId = Number(btn.dataset.delId);
+          const ok = await openConfirmModal({
+            title: 'Hapus Soal dari Bank Soal?',
+            message: 'Soal yang dihapus tidak akan muncul pada sesi ujian berikutnya (kecuali di-reset ke default).',
+            confirmText: 'Ya, Hapus Soal',
+            cancelText: 'Batal',
+            danger: true
+          });
+          if (ok) {
+            state.questions = state.questions.filter((item) => item.id !== qId);
+            if (state.admin.editingId === qId) state.admin.editingId = null;
+            saveJSON(STORAGE_KEYS.QUESTIONS, state.questions);
+            renderApp();
+            showToast('Soal berhasil dihapus.', 'info');
+          }
+        });
+      });
+
+      // Filter & Search in Admin bank
+      const filterSel = document.getElementById('adminFilterType');
+      const searchInp = document.getElementById('adminSearchInput');
+      if (filterSel) {
+        filterSel.addEventListener('change', (e) => {
+          state.admin.filterType = e.target.value;
+          renderApp();
+        });
+      }
+      if (searchInp) {
+        searchInp.addEventListener('input', (e) => {
+          state.admin.searchQuery = e.target.value;
+          renderApp();
+          const refocused = document.getElementById('adminSearchInput');
+          if (refocused) {
+            refocused.focus();
+            refocused.setSelectionRange(refocused.value.length, refocused.value.length);
+          }
+        });
+      }
+    }
+
+    // =========================================================================
+    // 8. INITIALIZATION
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Navigation click handlers
+      document.querySelectorAll('[data-nav]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const drawer = document.getElementById('mobileNavDrawer');
+          if (drawer) drawer.classList.add('hidden');
+          navigateTo(btn.dataset.nav);
+        });
+      });
+
+      const logoBtn = document.getElementById('brandLogoBtn');
+      if (logoBtn) {
+        logoBtn.addEventListener('click', () => navigateTo('home'));
+      }
+
+      const mobileBtn = document.getElementById('mobileMenuBtn');
+      if (mobileBtn) {
+        mobileBtn.addEventListener('click', () => {
+          const drawer = document.getElementById('mobileNavDrawer');
+          if (drawer) drawer.classList.toggle('hidden');
+        });
+      }
+
+      updateNavActiveStyles();
+      renderApp();
+    });
+  </script>
+</body>
+</html>
